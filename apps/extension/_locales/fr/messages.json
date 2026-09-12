@@ -1,0 +1,44 @@
+{
+  "extName": {
+    "message": "Carbomètre"
+  },
+  "extDescription": {
+    "message": "Affiche en temps réel une estimation des émissions de gaz à effet de serre de vos conversations avec une IA."
+  },
+  "badgeAriaLabel": {
+    "message": "Émissions de cette conversation : $AMOUNT$. Cliquer pour plus de détails.",
+    "placeholders": {
+      "amount": { "content": "$1" }
+    }
+  },
+  "badgeUnavailableAriaLabel": {
+    "message": "Émissions indisponibles pour cette conversation."
+  },
+  "dashboardTitle": {
+    "message": "Détails des émissions"
+  },
+  "dashboardCloseLabel": {
+    "message": "Fermer"
+  },
+  "dashboardConversationLabel": {
+    "message": "Cette conversation"
+  },
+  "dashboardConversationTooltip": {
+    "message": "Estimation. Méthode : tokens × facteur d'émission. Marge d'incertitude d'un facteur 3."
+  },
+  "dashboardLast30DaysLabel": {
+    "message": "30 derniers jours"
+  },
+  "dashboardEquivalentLabel": {
+    "message": "Équivalent"
+  },
+  "dashboardEquivalentValue": {
+    "message": "$AMOUNT$ en voiture",
+    "placeholders": {
+      "amount": { "content": "$1" }
+    }
+  },
+  "dashboardMethodologyLink": {
+    "message": "Méthodologie"
+  }
+}

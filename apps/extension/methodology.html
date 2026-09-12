@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Carbomètre — Méthodologie / Methodology</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    max-width: 640px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  code { background: rgba(127,127,127,0.15); padding: 0 4px; border-radius: 3px; }
+  .stub-notice {
+    font-size: 13px;
+    padding: 10px 14px;
+    border-left: 3px solid currentColor;
+    opacity: 0.8;
+    margin-bottom: 2em;
+  }
+  [hidden] { display: none; }
+</style>
+</head>
+<body>
+
+<div id="fr" hidden>
+  <h1>Carbomètre — Méthodologie</h1>
+  <p class="stub-notice">
+    Version préliminaire. La documentation complète, avec toutes les sources
+    citées, sera publiée dans <code>docs/METHODOLOGY.md</code> à une étape
+    ultérieure du développement.
+  </p>
+
+  <h2>Formule</h2>
+  <pre><code>energyWh      = (tokensOutEffectifs × eTokenWh + tokensIn × eTokenWh × 0.05) × pue
+electricityG  = energyWh × facteur d'émission du réseau électrique / 1000
+embodiedG     = (tokensOutEffectifs + tokensIn × 0.05) × empreinte matérielle par token
+gCO2e         = electricityG + embodiedG</code></pre>
+  <p>
+    <code>tokensOutEffectifs</code> inclut le raisonnement caché ou visible du
+    modèle. Le facteur d'entrée (0,05) reflète le fait que le traitement du
+    prompt est très parallélisé, donc bien moins coûteux par token que la
+    génération de la réponse.
+  </p>
+
+  <h2>Équivalent voiture</h2>
+  <p>125 gCO2e/km, une moyenne pour une voiture particulière.</p>
+
+  <h2>Limites connues</h2>
+  <ul>
+    <li>Le nombre de tokens est estimé à partir du nombre de caractères, pas mesuré avec le tokenizer réel du fournisseur.</li>
+    <li>Le raisonnement caché des modèles qui ne l'affichent pas est estimé par un multiplicateur, pas mesuré.</li>
+    <li>Le contexte invisible renvoyé par le fournisseur à chaque tour (historique, prompt système, documents) n'est pas comptabilisé : le résultat est donc une sous-estimation.</li>
+    <li>Le centre de données qui répond réellement n'est pas connu ; une région par défaut est supposée pour chaque modèle.</li>
+    <li>Les émissions liées à l'entraînement du modèle ne sont pas incluses.</li>
+  </ul>
+  <p><strong>Cet outil donne un ordre de grandeur, pas une mesure précise, et ne doit pas être utilisé pour un reporting carbone réglementaire.</strong></p>
+</div>
+
+<div id="en">
+  <h1>Carbomètre — Methodology</h1>
+  <p class="stub-notice">
+    Preliminary version. The full, fully-cited documentation will ship as
+    <code>docs/METHODOLOGY.md</code> at a later point in development.
+  </p>
+
+  <h2>Formula</h2>
+  <pre><code>energyWh      = (effectiveOutputTokens × eTokenWh + tokensIn × eTokenWh × 0.05) × pue
+electricityG  = energyWh × grid emission factor / 1000
+embodiedG     = (effectiveOutputTokens + tokensIn × 0.05) × embodied footprint per token
+gCO2e         = electricityG + embodiedG</code></pre>
+  <p>
+    <code>effectiveOutputTokens</code> includes the model's hidden or visible
+    reasoning. The input weight (0.05) reflects that prompt processing is
+    heavily parallelised, so far cheaper per token than generating the reply.
+  </p>
+
+  <h2>Car equivalent</h2>
+  <p>125 gCO2e/km, a typical average passenger car.</p>
+
+  <h2>Known limitations</h2>
+  <ul>
+    <li>Token counts are estimated from character length, not measured with the provider's real tokenizer.</li>
+    <li>Hidden reasoning on models that don't show it is estimated with a multiplier, not measured.</li>
+    <li>The invisible context the provider re-sends every turn (history, system prompt, documents) is not counted - the result is an underestimate.</li>
+    <li>The datacentre that actually answers a request is unknown; a default region is assumed per model.</li>
+    <li>Emissions from training the model are not included.</li>
+  </ul>
+  <p><strong>This tool gives an order of magnitude, not a precise measurement, and must not be used for regulatory carbon reporting.</strong></p>
+</div>
+
+<script>
+  (function () {
+    var lang = 'en';
+    try {
+      if (typeof chrome !== 'undefined' && chrome.i18n && chrome.i18n.getUILanguage) {
+        lang = chrome.i18n.getUILanguage().slice(0, 2).toLowerCase() === 'fr' ? 'fr' : 'en';
+      }
+    } catch (e) {}
+    document.getElementById('fr').hidden = lang !== 'fr';
+    document.getElementById('en').hidden = lang === 'fr';
+  })();
+</script>
+</body>
+</html>

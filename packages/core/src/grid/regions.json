@@ -1,0 +1,22 @@
+{
+  "us-average": {
+    "factor": 370,
+    "note": "Default assumption for US-hosted frontier models; US national grid average."
+  },
+  "us-east": {
+    "factor": 380,
+    "note": "Virginia cluster (dominant US hyperscaler region)."
+  },
+  "us-west": {
+    "factor": 120,
+    "note": "Pacific Northwest, hydro-heavy grid."
+  },
+  "eu-west": {
+    "factor": 290,
+    "note": "Ireland, dominant EU hyperscaler region."
+  },
+  "fr": {
+    "factor": 60,
+    "note": "French grid mix (nuclear-heavy, low carbon intensity)."
+  }
+}

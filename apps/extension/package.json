@@ -1,0 +1,26 @@
+{
+  "name": "@carbometre/extension",
+  "version": "0.1.0",
+  "description": "Carbomètre browser extension: badge + dashboard for the calculation engine in @carbometre/core.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/clean.mjs && node esbuild.config.mjs && node scripts/copy-static.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/check-i18n-parity.mjs && vitest run",
+    "test:watch": "vitest",
+    "check:i18n": "node scripts/check-i18n-parity.mjs"
+  },
+  "dependencies": {
+    "@carbometre/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.2.9",
+    "@types/jsdom": "^30.0.0",
+    "esbuild": "^0.28.2",
+    "jsdom": "^30.0.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
+  }
+}
