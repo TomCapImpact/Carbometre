@@ -29,7 +29,7 @@ const PROMPT_200_CHARS = 'y'.repeat(200); // -> 50 tokens in English (4.0 chars/
 const RESPONSE_2000_CHARS = 'x'.repeat(2000); // -> 500 tokens in English
 
 describe('CarbometerService golden values', () => {
-  it('estimates a 500-token Claude frontier response near 0.12-0.13 gCO2e', () => {
+  it('estimates a 500-token Claude frontier response near 0.17 gCO2e', () => {
     const service = buildService();
 
     const estimate = service.estimate({
@@ -41,13 +41,15 @@ describe('CarbometerService golden values', () => {
 
     expect(estimate.usage.tokensIn).toBe(50);
     expect(estimate.usage.tokensOut).toBe(500);
-    // Pinned exact value: (500*5e-4 + 50*5e-4*0.05)*1.12*370/1000 + (500+2.5)*4.9e-5.
+    // Pinned exact value: (500*5e-4 + 50*5e-4*0.05)*1.54*370/1000 + (500+2.5)*4.9e-5.
+    // Rose from 0.1287405 when PUE moved from the best-in-class 1.12 to the
+    // Uptime Institute 2025 global average of 1.54 - see docs/METHODOLOGY.md §4.
     // If this fails after a coefficient change, update the expected value deliberately.
-    expect(estimate.gCO2e).toBeCloseTo(0.1287405, 6);
+    expect(estimate.gCO2e).toBeCloseTo(0.16778475, 6);
     expect(estimate.confidence).toBe('modelled');
   });
 
-  it('estimates a 500-token Mistral response near 0.04 gCO2e', () => {
+  it('estimates a 500-token Mistral response near 0.055 gCO2e', () => {
     const service = buildService();
 
     const estimate = service.estimate({
@@ -59,8 +61,8 @@ describe('CarbometerService golden values', () => {
 
     expect(estimate.usage.tokensIn).toBe(50);
     expect(estimate.usage.tokensOut).toBe(500);
-    // Pinned exact value: (500*2e-4 + 50*2e-4*0.05)*1.12*290/1000 + (500+2.5)*2.0e-5.
-    expect(estimate.gCO2e).toBeCloseTo(0.0426924, 6);
+    // Pinned exact value: (500*2e-4 + 50*2e-4*0.05)*1.54*290/1000 + (500+2.5)*2.0e-5.
+    expect(estimate.gCO2e).toBeCloseTo(0.0549333, 6);
   });
 
   it('counts visible Claude extended-thinking text as extra output tokens', () => {

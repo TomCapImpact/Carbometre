@@ -26,7 +26,7 @@ describe('DatacenterGridProvider', () => {
     expect(provider.intensityFor(new ModelProfile({ ...BASE_PROPS, regionId: 'us-east' }))).toBe(380);
     expect(provider.intensityFor(new ModelProfile({ ...BASE_PROPS, regionId: 'us-west' }))).toBe(120);
     expect(provider.intensityFor(new ModelProfile({ ...BASE_PROPS, regionId: 'eu-west' }))).toBe(290);
-    expect(provider.intensityFor(new ModelProfile({ ...BASE_PROPS, regionId: 'fr' }))).toBe(60);
+    expect(provider.intensityFor(new ModelProfile({ ...BASE_PROPS, regionId: 'fr' }))).toBe(30);
   });
 
   it('throws on an unknown regionId rather than silently guessing', () => {

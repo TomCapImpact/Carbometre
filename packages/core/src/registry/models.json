@@ -4,18 +4,19 @@
     "label": "Claude (modèle avancé)",
     "tier": "frontier",
     "emissionModelId": "token-based",
-    "eTokenWh": 5.0e-4,
-    "pue": 1.12,
+    "eTokenWh": 0.0005,
+    "pue": 1.54,
     "regionId": "us-average",
     "regionConfidence": "assumed",
-    "embodiedPerTokenG": 4.9e-5,
+    "embodiedPerTokenG": 4.9e-05,
     "hiddenThinkingMultiplier": 1.0,
     "thinkingVisible": true,
     "uncertaintyFactor": 3.0,
     "confidence": "modelled",
     "sources": [
       "Tier default (frontier, >200B params): 5.0e-4 Wh/output token - see docs/METHODOLOGY.md",
-      "Anthropic does not disclose serving region; us-average grid factor is an assumption, not a stated fact"
+      "Anthropic does not disclose serving region; us-average grid factor is an assumption, not a stated fact",
+      "PUE 1.54: Uptime Institute Global Data Center Survey 2025 global average - deliberately not the best-in-class hyperscaler figure, since we cannot verify which facility serves a given request"
     ]
   },
   {
@@ -23,18 +24,19 @@
     "label": "Claude (modèle intermédiaire)",
     "tier": "mid",
     "emissionModelId": "token-based",
-    "eTokenWh": 2.0e-4,
-    "pue": 1.12,
+    "eTokenWh": 0.0002,
+    "pue": 1.54,
     "regionId": "us-average",
     "regionConfidence": "assumed",
-    "embodiedPerTokenG": 2.0e-5,
+    "embodiedPerTokenG": 2e-05,
     "hiddenThinkingMultiplier": 1.0,
     "thinkingVisible": true,
     "uncertaintyFactor": 3.0,
     "confidence": "modelled",
     "sources": [
       "Tier default (mid): 2.0e-4 Wh/output token - see docs/METHODOLOGY.md",
-      "Anthropic does not disclose serving region; us-average grid factor is an assumption, not a stated fact"
+      "Anthropic does not disclose serving region; us-average grid factor is an assumption, not a stated fact",
+      "PUE 1.54: Uptime Institute Global Data Center Survey 2025 global average - deliberately not the best-in-class hyperscaler figure, since we cannot verify which facility serves a given request"
     ]
   },
   {
@@ -42,18 +44,19 @@
     "label": "Claude (modèle rapide)",
     "tier": "small",
     "emissionModelId": "token-based",
-    "eTokenWh": 6.0e-5,
-    "pue": 1.12,
+    "eTokenWh": 6e-05,
+    "pue": 1.54,
     "regionId": "us-average",
     "regionConfidence": "assumed",
-    "embodiedPerTokenG": 6.0e-6,
+    "embodiedPerTokenG": 6e-06,
     "hiddenThinkingMultiplier": 1.0,
     "thinkingVisible": true,
     "uncertaintyFactor": 3.0,
     "confidence": "modelled",
     "sources": [
       "Tier default (small/fast): 6.0e-5 Wh/output token - see docs/METHODOLOGY.md",
-      "Anthropic does not disclose serving region; us-average grid factor is an assumption, not a stated fact"
+      "Anthropic does not disclose serving region; us-average grid factor is an assumption, not a stated fact",
+      "PUE 1.54: Uptime Institute Global Data Center Survey 2025 global average - deliberately not the best-in-class hyperscaler figure, since we cannot verify which facility serves a given request"
     ]
   },
   {
@@ -61,11 +64,11 @@
     "label": "ChatGPT (modèle avancé)",
     "tier": "frontier",
     "emissionModelId": "token-based",
-    "eTokenWh": 5.0e-4,
-    "pue": 1.12,
+    "eTokenWh": 0.0005,
+    "pue": 1.54,
     "regionId": "us-average",
     "regionConfidence": "assumed",
-    "embodiedPerTokenG": 4.9e-5,
+    "embodiedPerTokenG": 4.9e-05,
     "hiddenThinkingMultiplier": 4.0,
     "thinkingVisible": false,
     "uncertaintyFactor": 3.0,
@@ -73,7 +76,8 @@
     "sources": [
       "Tier default (frontier, >200B params): 5.0e-4 Wh/output token - see docs/METHODOLOGY.md",
       "Reasoning is hidden by default on OpenAI's flagship models; hiddenThinkingMultiplier is a placeholder pending measured data",
-      "OpenAI does not disclose serving region; us-average grid factor is an assumption, not a stated fact"
+      "OpenAI does not disclose serving region; us-average grid factor is an assumption, not a stated fact",
+      "PUE 1.54: Uptime Institute Global Data Center Survey 2025 global average - deliberately not the best-in-class hyperscaler figure, since we cannot verify which facility serves a given request"
     ]
   },
   {
@@ -81,11 +85,11 @@
     "label": "ChatGPT (modèle intermédiaire)",
     "tier": "mid",
     "emissionModelId": "token-based",
-    "eTokenWh": 2.0e-4,
-    "pue": 1.12,
+    "eTokenWh": 0.0002,
+    "pue": 1.54,
     "regionId": "us-average",
     "regionConfidence": "assumed",
-    "embodiedPerTokenG": 2.0e-5,
+    "embodiedPerTokenG": 2e-05,
     "hiddenThinkingMultiplier": 4.0,
     "thinkingVisible": false,
     "uncertaintyFactor": 3.0,
@@ -93,7 +97,8 @@
     "sources": [
       "Tier default (mid): 2.0e-4 Wh/output token - see docs/METHODOLOGY.md",
       "Reasoning is hidden by default on OpenAI's mid-tier models; hiddenThinkingMultiplier is a placeholder pending measured data",
-      "OpenAI does not disclose serving region; us-average grid factor is an assumption, not a stated fact"
+      "OpenAI does not disclose serving region; us-average grid factor is an assumption, not a stated fact",
+      "PUE 1.54: Uptime Institute Global Data Center Survey 2025 global average - deliberately not the best-in-class hyperscaler figure, since we cannot verify which facility serves a given request"
     ]
   },
   {
@@ -101,11 +106,11 @@
     "label": "ChatGPT (modèle rapide)",
     "tier": "small",
     "emissionModelId": "token-based",
-    "eTokenWh": 6.0e-5,
-    "pue": 1.12,
+    "eTokenWh": 6e-05,
+    "pue": 1.54,
     "regionId": "us-average",
     "regionConfidence": "assumed",
-    "embodiedPerTokenG": 6.0e-6,
+    "embodiedPerTokenG": 6e-06,
     "hiddenThinkingMultiplier": 1.0,
     "thinkingVisible": false,
     "uncertaintyFactor": 3.0,
@@ -113,7 +118,8 @@
     "sources": [
       "Tier default (small/fast): 6.0e-5 Wh/output token - see docs/METHODOLOGY.md",
       "Fast/small-tier chat models are assumed non-reasoning; hiddenThinkingMultiplier left at 1.0",
-      "OpenAI does not disclose serving region; us-average grid factor is an assumption, not a stated fact"
+      "OpenAI does not disclose serving region; us-average grid factor is an assumption, not a stated fact",
+      "PUE 1.54: Uptime Institute Global Data Center Survey 2025 global average - deliberately not the best-in-class hyperscaler figure, since we cannot verify which facility serves a given request"
     ]
   },
   {
@@ -121,11 +127,11 @@
     "label": "Mistral (modèle avancé)",
     "tier": "frontier",
     "emissionModelId": "token-based",
-    "eTokenWh": 5.0e-4,
-    "pue": 1.12,
+    "eTokenWh": 0.0005,
+    "pue": 1.54,
     "regionId": "eu-west",
     "regionConfidence": "assumed",
-    "embodiedPerTokenG": 4.9e-5,
+    "embodiedPerTokenG": 4.9e-05,
     "hiddenThinkingMultiplier": 1.0,
     "thinkingVisible": false,
     "uncertaintyFactor": 3.0,
@@ -133,7 +139,8 @@
     "sources": [
       "Tier default (frontier, >200B params): 5.0e-4 Wh/output token - see docs/METHODOLOGY.md",
       "Mistral's largest current models are below the 200B frontier threshold; kept for catalog completeness",
-      "Mistral does not disclose serving region; eu-west grid factor is an assumption, not a stated fact"
+      "Mistral does not disclose serving region; eu-west grid factor is an assumption, not a stated fact",
+      "PUE 1.54: Uptime Institute Global Data Center Survey 2025 global average - deliberately not the best-in-class hyperscaler figure, since we cannot verify which facility serves a given request"
     ]
   },
   {
@@ -141,11 +148,11 @@
     "label": "Mistral (modèle intermédiaire)",
     "tier": "mid",
     "emissionModelId": "token-based",
-    "eTokenWh": 2.0e-4,
-    "pue": 1.12,
+    "eTokenWh": 0.0002,
+    "pue": 1.54,
     "regionId": "eu-west",
     "regionConfidence": "assumed",
-    "embodiedPerTokenG": 2.0e-5,
+    "embodiedPerTokenG": 2e-05,
     "hiddenThinkingMultiplier": 1.0,
     "thinkingVisible": false,
     "uncertaintyFactor": 3.0,
@@ -153,7 +160,8 @@
     "sources": [
       "Tier default (mid): 2.0e-4 Wh/output token - see docs/METHODOLOGY.md",
       "Represents Mistral's current flagship (e.g. Mistral Large), sized below the 200B frontier threshold",
-      "Mistral does not disclose serving region; eu-west grid factor is an assumption, not a stated fact"
+      "Mistral does not disclose serving region; eu-west grid factor is an assumption, not a stated fact",
+      "PUE 1.54: Uptime Institute Global Data Center Survey 2025 global average - deliberately not the best-in-class hyperscaler figure, since we cannot verify which facility serves a given request"
     ]
   },
   {
@@ -161,18 +169,19 @@
     "label": "Mistral (modèle rapide)",
     "tier": "small",
     "emissionModelId": "token-based",
-    "eTokenWh": 6.0e-5,
-    "pue": 1.12,
+    "eTokenWh": 6e-05,
+    "pue": 1.54,
     "regionId": "eu-west",
     "regionConfidence": "assumed",
-    "embodiedPerTokenG": 6.0e-6,
+    "embodiedPerTokenG": 6e-06,
     "hiddenThinkingMultiplier": 1.0,
     "thinkingVisible": false,
     "uncertaintyFactor": 3.0,
     "confidence": "modelled",
     "sources": [
       "Tier default (small/fast): 6.0e-5 Wh/output token - see docs/METHODOLOGY.md",
-      "Mistral does not disclose serving region; eu-west grid factor is an assumption, not a stated fact"
+      "Mistral does not disclose serving region; eu-west grid factor is an assumption, not a stated fact",
+      "PUE 1.54: Uptime Institute Global Data Center Survey 2025 global average - deliberately not the best-in-class hyperscaler figure, since we cannot verify which facility serves a given request"
     ]
   }
 ]

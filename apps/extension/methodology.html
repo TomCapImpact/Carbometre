@@ -27,9 +27,9 @@
 <div id="fr" hidden>
   <h1>Carbomètre — Méthodologie</h1>
   <p class="stub-notice">
-    Version préliminaire. La documentation complète, avec toutes les sources
-    citées, sera publiée dans <code>docs/METHODOLOGY.md</code> à une étape
-    ultérieure du développement.
+    Résumé. La méthodologie complète, avec les sources et l'écart de chaque
+    coefficient par rapport à la littérature publiée, se trouve dans
+    <code>docs/METHODOLOGY.md</code> du dépôt.
   </p>
 
   <h2>Formule</h2>
@@ -45,7 +45,7 @@ gCO2e         = electricityG + embodiedG</code></pre>
   </p>
 
   <h2>Équivalent voiture</h2>
-  <p>125 gCO2e/km, une moyenne pour une voiture particulière.</p>
+  <p>125 gCO2e/km, moyenne du parc automobile en conditions réelles (les voitures neuves européennes sont à 106,7 g/km sur cycle WLTP, hors production du carburant et du véhicule).</p>
 
   <h2>Limites connues</h2>
   <ul>
@@ -54,6 +54,8 @@ gCO2e         = electricityG + embodiedG</code></pre>
     <li>Le contexte invisible renvoyé par le fournisseur à chaque tour (historique, prompt système, documents) n'est pas comptabilisé : le résultat est donc une sous-estimation.</li>
     <li>Le centre de données qui répond réellement n'est pas connu ; une région par défaut est supposée pour chaque modèle.</li>
     <li>Les émissions liées à l'entraînement du modèle ne sont pas incluses.</li>
+    <li>L'empreinte matérielle par token n'est adossée à aucune source publiée : c'est le chiffre le plus faible du modèle, pour environ 20&nbsp;% du total.</li>
+    <li>Le rendement du centre de données retenu (PUE 1,54) est la moyenne mondiale publiée, et non celle — plus flatteuse — des installations les plus performantes : nous ne pouvons pas vérifier d'où une requête est servie, et une hypothèse invérifiable ne doit pas jouer en faveur du chiffre affiché.</li>
   </ul>
   <p><strong>Cet outil donne un ordre de grandeur, pas une mesure précise, et ne doit pas être utilisé pour un reporting carbone réglementaire.</strong></p>
 </div>
@@ -61,8 +63,9 @@ gCO2e         = electricityG + embodiedG</code></pre>
 <div id="en">
   <h1>Carbomètre — Methodology</h1>
   <p class="stub-notice">
-    Preliminary version. The full, fully-cited documentation will ship as
-    <code>docs/METHODOLOGY.md</code> at a later point in development.
+    Summary. The full methodology - sources, and how each coefficient compares
+    to the published literature - is in <code>docs/METHODOLOGY.md</code> in the
+    repository.
   </p>
 
   <h2>Formula</h2>
@@ -77,7 +80,7 @@ gCO2e         = electricityG + embodiedG</code></pre>
   </p>
 
   <h2>Car equivalent</h2>
-  <p>125 gCO2e/km, a typical average passenger car.</p>
+  <p>125 gCO2e/km, a real-world fleet average (new EU cars measure 106.7 g/km on the WLTP test cycle, excluding fuel and vehicle production).</p>
 
   <h2>Known limitations</h2>
   <ul>
@@ -86,6 +89,8 @@ gCO2e         = electricityG + embodiedG</code></pre>
     <li>The invisible context the provider re-sends every turn (history, system prompt, documents) is not counted - the result is an underestimate.</li>
     <li>The datacentre that actually answers a request is unknown; a default region is assumed per model.</li>
     <li>Emissions from training the model are not included.</li>
+    <li>Embodied hardware emissions per token are not traceable to any published source - the weakest number in the model, worth roughly 20% of the total.</li>
+    <li>The datacentre efficiency used (PUE 1.54) is the published global average, not the more flattering best-in-class figure: we cannot verify which facility serves a request, and an unverifiable assumption should not favour the displayed number.</li>
   </ul>
   <p><strong>This tool gives an order of magnitude, not a precise measurement, and must not be used for regulatory carbon reporting.</strong></p>
 </div>

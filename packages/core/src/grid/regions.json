@@ -16,7 +16,7 @@
     "note": "Ireland, dominant EU hyperscaler region."
   },
   "fr": {
-    "factor": 60,
-    "note": "French grid mix (nuclear-heavy, low carbon intensity)."
+    "factor": 30,
+    "note": "French grid mix, lifecycle basis - RTE Annual Electricity Review 2024 (30.2 gCO2eq/kWh)."
   }
 }
