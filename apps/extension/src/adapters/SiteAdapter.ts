@@ -1,3 +1,4 @@
+import type { FallbackHint } from '@carbometre/core';
 import type { Unsubscribe } from '../types.js';
 
 /** One finished exchange: the user's visible prompt and the assistant's visible reply. */
@@ -27,9 +28,16 @@ export abstract class SiteAdapter {
   /** A catalog model id (e.g. "claude-frontier"), or null if the model picker can't be read. */
   abstract detectModelId(): string | null;
 
+  /**
+   * Which catalog profile to fall back on when detectModelId() comes back
+   * null. Without this, an unreadable model picker silently drops the
+   * response entirely; with it, the exchange is still counted but the
+   * resulting Estimate is marked confidence: 'guessed' (see
+   * ModelRegistry.resolve). Note the providerId here keys the catalog
+   * ("gpt-*"), which is not always the adapter's own providerId ("chatgpt").
+   */
+  abstract fallbackModel(): FallbackHint;
+
   /** A stable per-conversation id, or null when no conversation is open (e.g. the site's home screen). */
   abstract currentConversationId(): string | null;
-
-  /** Where the badge is injected, immediately before this element. Null if the header isn't ready yet. */
-  abstract badgeAnchor(): HTMLElement | null;
 }

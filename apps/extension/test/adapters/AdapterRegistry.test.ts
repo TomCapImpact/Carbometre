@@ -1,3 +1,4 @@
+import type { FallbackHint } from '@carbometre/core';
 import { describe, expect, it } from 'vitest';
 import { AdapterRegistry } from '../../src/adapters/AdapterRegistry.js';
 import { type RawResponse, SiteAdapter } from '../../src/adapters/SiteAdapter.js';
@@ -12,10 +13,10 @@ class StubAdapter extends SiteAdapter {
   detectModelId(): string | null {
     return null;
   }
-  currentConversationId(): string | null {
-    return null;
+  fallbackModel(): FallbackHint {
+    return { providerId: 'stub', tier: 'mid' };
   }
-  badgeAnchor(): HTMLElement | null {
+  currentConversationId(): string | null {
     return null;
   }
 }

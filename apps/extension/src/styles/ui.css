@@ -1,28 +1,52 @@
 /*
- * No transitions or animations here on purpose: the v1 badge is static text,
- * so prefers-reduced-motion has nothing to disable. Colors are inherited
- * from the host page instead of hardcoded, so dark mode is automatic.
+ * A permanently floating, draggable bubble (Messenger-style) rather than
+ * blended into any site's header - see BadgeView. No transitions/animations
+ * on purpose (static text; nothing for prefers-reduced-motion to disable),
+ * except the drag itself, which is direct pointer tracking, not an
+ * animation. Own colors instead of `inherit`, since it isn't sitting next
+ * to any host element to match.
  */
 .carbometre-badge {
   all: unset;
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483647;
   display: inline-flex;
   align-items: center;
   box-sizing: border-box;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  padding: 0 8px;
-  border-radius: 6px;
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  padding: 6px 14px;
+  border-radius: 999px;
   white-space: nowrap;
 }
 
+@media (prefers-color-scheme: dark) {
+  .carbometre-badge {
+    background: #2a2a2a;
+    color: #f5f5f5;
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  }
+}
+
 .carbometre-badge:hover {
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.24);
 }
 
 .carbometre-badge:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
+}
+
+.carbometre-badge--dragging {
+  cursor: grabbing;
 }
 
 /*

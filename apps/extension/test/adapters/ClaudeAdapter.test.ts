@@ -44,18 +44,41 @@ describe('ClaudeAdapter', () => {
     });
   });
 
-  describe('badgeAnchor', () => {
-    it('finds the Share button, the actual rightmost header control', () => {
-      const adapter = buildAdapter('<button data-testid="wiggle-controls-actions-share">Share</button>');
-      expect(adapter.badgeAnchor()?.getAttribute('data-testid')).toBe('wiggle-controls-actions-share');
-    });
-
-    it('returns null when the header has not rendered yet', () => {
-      expect(buildAdapter('<html></html>').badgeAnchor()).toBeNull();
-    });
-  });
 
   describe('observeResponses', () => {
+    it('matches a reply to its prompt by document order, even when turns are not DOM siblings', async () => {
+      // Inherited from TranscriptAdapter: chatgpt.com proved that turn
+      // elements can each sit in their own wrapper, making
+      // previousElementSibling useless for relating a reply to its prompt.
+      // Claude's own markup doesn't currently nest this way, so this guards
+      // against a future redesign silently breaking counting here too.
+      vi.useFakeTimers();
+      try {
+        const adapter = buildAdapter(
+          `<div data-testid="transcript-list">
+             <div class="row"><div data-testid="transcript-row" data-perf-row="human" data-perf-row-streaming="false">
+               <div data-testid="user-message">Why is the sky blue?</div>
+             </div></div>
+             <div class="row"><div data-testid="transcript-row" data-perf-row="assistant" data-perf-row-streaming="false">
+               <div data-perf-reply-text=""></div>
+             </div></div>
+           </div>`,
+        );
+        const replyTextEl = adapter['doc'].querySelector('[data-perf-reply-text]') as HTMLElement;
+
+        const responses: unknown[] = [];
+        const stop = adapter.observeResponses((r) => responses.push(r));
+
+        replyTextEl.textContent = 'Rayleigh scattering.';
+        await vi.advanceTimersByTimeAsync(900);
+
+        expect(responses).toEqual([{ promptText: 'Why is the sky blue?', responseText: 'Rayleigh scattering.' }]);
+        stop();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it('reports a finished exchange once its assistant turn stops mutating for 800ms', async () => {
       vi.useFakeTimers();
       try {

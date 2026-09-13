@@ -114,8 +114,12 @@ export class DashboardView {
   open(trigger: HTMLElement, data: DashboardData): void {
     this.trigger = trigger;
     this.render(data);
-    this.positionBelow(trigger.getBoundingClientRect());
+    // Unhide before measuring: a hidden element's height is always 0, and
+    // position() needs the real height to know whether it fits below the
+    // anchor (e.g. the floating-badge fallback sits at the bottom of the
+    // viewport, where there's no room underneath it).
     this.panel.hidden = false;
+    this.position(trigger.getBoundingClientRect());
     this.openState = true;
     this.lastFocused = this.doc.activeElement as HTMLElement | null;
     this.closeButton.focus();
@@ -151,13 +155,34 @@ export class DashboardView {
     ]);
   }
 
-  private positionBelow(anchorRect: DOMRect): void {
+  /**
+   * Prefers just below and left-aligned with the anchor (badge), like a
+   * normal dropdown, flipping to whichever side of each axis actually has
+   * room. The badge is a user-draggable bubble that can end up anywhere on
+   * screen (a corner, an edge), so both axes need this, not just vertical.
+   */
+  private position(anchorRect: DOMRect): void {
     const win = this.doc.defaultView;
     const viewportWidth = win?.innerWidth ?? anchorRect.right;
+    const viewportHeight = win?.innerHeight ?? anchorRect.bottom;
+    const margin = 8;
+
     this.panel.style.position = 'fixed';
-    this.panel.style.top = `${anchorRect.bottom + 8}px`;
-    this.panel.style.left = 'auto';
-    this.panel.style.right = `${viewportWidth - anchorRect.right}px`;
+    const panelRect = this.panel.getBoundingClientRect();
+
+    const fitsLeftAligned = anchorRect.left + panelRect.width + margin <= viewportWidth;
+    if (fitsLeftAligned) {
+      this.panel.style.left = `${Math.max(margin, anchorRect.left)}px`;
+      this.panel.style.right = 'auto';
+    } else {
+      this.panel.style.left = 'auto';
+      this.panel.style.right = `${Math.max(margin, viewportWidth - anchorRect.right)}px`;
+    }
+
+    const fitsBelow = anchorRect.bottom + margin + panelRect.height <= viewportHeight;
+    this.panel.style.top = fitsBelow
+      ? `${anchorRect.bottom + margin}px`
+      : `${Math.max(margin, anchorRect.top - margin - panelRect.height)}px`;
   }
 
   private buildRow(label: string): HTMLDivElement {

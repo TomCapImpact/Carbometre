@@ -13,7 +13,7 @@ import type { Messages } from '../../src/i18n/Messages.js';
 import type { ConversationRepository } from '../../src/storage/ConversationRepository.js';
 import type { UsageHistoryRepository } from '../../src/storage/UsageHistoryRepository.js';
 import { CarbometerPresenter } from '../../src/ui/CarbometerPresenter.js';
-import type { Conversation } from '@carbometre/core';
+import type { Conversation, FallbackHint } from '@carbometre/core';
 
 const METHODOLOGY_URL = 'https://example.invalid/methodology.html';
 
@@ -58,12 +58,12 @@ class StubAdapter extends SiteAdapter {
     return this.modelId;
   }
 
-  currentConversationId(): string | null {
-    return this.conversationId;
+  fallbackModel(): FallbackHint {
+    return { providerId: 'claude', tier: 'frontier' };
   }
 
-  badgeAnchor(): HTMLElement | null {
-    return this.doc.querySelector<HTMLElement>('#anchor');
+  currentConversationId(): string | null {
+    return this.conversationId;
   }
 }
 
@@ -105,8 +105,20 @@ function buildService(): CarbometerService {
   );
 }
 
+function buildPresenter(adapter: StubAdapter, repository: InMemoryConversationRepository): CarbometerPresenter {
+  return new CarbometerPresenter(
+    adapter,
+    buildService(),
+    repository,
+    new InMemoryUsageHistoryRepository(),
+    new StubMessages(),
+    METHODOLOGY_URL,
+    document,
+  );
+}
+
 beforeEach(() => {
-  document.body.innerHTML = '<header><button id="anchor">menu</button></header>';
+  document.body.innerHTML = '';
   vi.stubGlobal('chrome', { i18n: { getUILanguage: () => 'en-US' } });
 });
 
@@ -115,24 +127,24 @@ afterEach(() => {
 });
 
 describe('CarbometerPresenter', () => {
-  it('mounts the badge next to the anchor and shows the restored total for the current conversation', async () => {
+  it('mounts the floating badge to the body and shows the restored total for the current conversation', async () => {
     const repository = new InMemoryConversationRepository();
     const adapter = new StubAdapter(document);
-    const presenter = new CarbometerPresenter(adapter, buildService(), repository, new InMemoryUsageHistoryRepository(), new StubMessages(), METHODOLOGY_URL, document);
+    const presenter = buildPresenter(adapter, repository);
 
     presenter.start();
     await flushMicrotasks();
 
     const badge = document.querySelector('.carbometre-badge');
     expect(badge).not.toBeNull();
-    expect(badge?.previousElementSibling === null && badge?.nextElementSibling?.id === 'anchor').toBe(true);
-    expect(badge?.textContent).toBe('0.0 gCO2e');
+    expect(badge?.parentElement).toBe(document.body);
+    expect(badge?.textContent).toBe('0.00 gCO2e');
   });
 
   it('accumulates each new response into the running total shown on the badge', async () => {
     const repository = new InMemoryConversationRepository();
     const adapter = new StubAdapter(document);
-    const presenter = new CarbometerPresenter(adapter, buildService(), repository, new InMemoryUsageHistoryRepository(), new StubMessages(), METHODOLOGY_URL, document);
+    const presenter = buildPresenter(adapter, repository);
 
     presenter.start();
     await flushMicrotasks();
@@ -141,7 +153,7 @@ describe('CarbometerPresenter', () => {
     await flushMicrotasks();
 
     const badge = document.querySelector('.carbometre-badge');
-    expect(badge?.textContent).not.toBe('0.0 gCO2e');
+    expect(badge?.textContent).not.toBe('0.00 gCO2e');
 
     const firstReading = badge?.textContent;
     adapter.emit({ promptText: 'y'.repeat(200), responseText: 'x'.repeat(2000) });
@@ -154,7 +166,7 @@ describe('CarbometerPresenter', () => {
   it('restores a previously-visited conversation total instead of starting at zero, without double-counting', async () => {
     const repository = new InMemoryConversationRepository();
     const seedAdapter = new StubAdapter(document);
-    const presenter1 = new CarbometerPresenter(seedAdapter, buildService(), repository, new InMemoryUsageHistoryRepository(), new StubMessages(), METHODOLOGY_URL, document);
+    const presenter1 = buildPresenter(seedAdapter, repository);
     presenter1.start();
     await flushMicrotasks();
     seedAdapter.emit({ promptText: 'y'.repeat(200), responseText: 'x'.repeat(2000) });
@@ -164,17 +176,9 @@ describe('CarbometerPresenter', () => {
 
     // Simulate navigating away and back: a fresh presenter/adapter pair for
     // the same conversation id should show the stored total, not zero.
-    document.body.innerHTML = '<header><button id="anchor">menu</button></header>';
+    document.body.innerHTML = '';
     const returningAdapter = new StubAdapter(document);
-    const presenter2 = new CarbometerPresenter(
-      returningAdapter,
-      buildService(),
-      repository,
-      new InMemoryUsageHistoryRepository(),
-      new StubMessages(),
-      METHODOLOGY_URL,
-      document,
-    );
+    const presenter2 = buildPresenter(returningAdapter, repository);
     presenter2.start();
     await flushMicrotasks();
 
@@ -186,7 +190,7 @@ describe('CarbometerPresenter', () => {
     const repository = new InMemoryConversationRepository();
     const adapter = new StubAdapter(document);
     adapter.conversationId = null;
-    const presenter = new CarbometerPresenter(adapter, buildService(), repository, new InMemoryUsageHistoryRepository(), new StubMessages(), METHODOLOGY_URL, document);
+    const presenter = buildPresenter(adapter, repository);
 
     presenter.start();
     await flushMicrotasks();
@@ -194,18 +198,27 @@ describe('CarbometerPresenter', () => {
     expect(document.querySelector('.carbometre-badge')?.textContent).toBe('--');
   });
 
-  it('leaves the total unchanged when the model cannot be identified, rather than guessing', async () => {
+  it('still counts a response when the model picker cannot be read, marking the estimate as guessed', async () => {
+    // Dropping these silently is what left the badge frozen on chatgpt.com
+    // when a guessed model-picker selector didn't match. Counting against the
+    // adapter's fallback tier - and saying so via confidence: 'guessed' - is
+    // the honest version of "we're less sure", rather than "nothing happened".
+    // Asserted on responseCount, not badge text: a short exchange rounds to
+    // 0.00 either way, so a text assertion would pass for free.
     const repository = new InMemoryConversationRepository();
     const adapter = new StubAdapter(document);
-    const presenter = new CarbometerPresenter(adapter, buildService(), repository, new InMemoryUsageHistoryRepository(), new StubMessages(), METHODOLOGY_URL, document);
+    const presenter = buildPresenter(adapter, repository);
     presenter.start();
     await flushMicrotasks();
 
     adapter.modelId = null;
-    adapter.emit({ promptText: 'hi', responseText: 'hello' });
+    adapter.emit({ promptText: 'y'.repeat(200), responseText: 'x'.repeat(2000) });
     await flushMicrotasks();
 
-    expect(document.querySelector('.carbometre-badge')?.textContent).toBe('0.0 gCO2e');
+    const stored = await repository.load('conv-1');
+    expect(stored?.responseCount).toBe(1);
+    expect(stored?.total.gCO2e).toBeGreaterThan(0);
+    expect(stored?.total.confidence).toBe('guessed');
   });
 });
 

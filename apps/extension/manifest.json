@@ -4,19 +4,37 @@
   "description": "__MSG_extDescription__",
   "version": "0.1.0",
   "default_locale": "en",
-  "permissions": ["storage"],
+  "permissions": [
+    "storage"
+  ],
   "content_scripts": [
     {
-      "matches": ["https://claude.ai/*"],
-      "js": ["content.js"],
-      "css": ["ui.css"],
+      "matches": [
+        "https://claude.ai/*",
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://chat.mistral.ai/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "ui.css"
+      ],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["methodology.html"],
-      "matches": ["https://claude.ai/*"]
+      "resources": [
+        "methodology.html"
+      ],
+      "matches": [
+        "https://claude.ai/*",
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://chat.mistral.ai/*"
+      ]
     }
   ]
 }
