@@ -172,12 +172,33 @@ and `onboarding.js`.
 
 ---
 
-## Assets still to produce
+## Assets
 
-- [ ] **Icon.** `apps/extension/icons/` currently holds a plain generated placeholder.
-      Run `node scripts/make-icons.mjs path/to/logo.png` from `apps/extension/` to
-      replace all three sizes from a real square logo.
-- [ ] **Screenshots** (1280×800 or 640×400, up to 5). Suggested: the badge in place on a
-      conversation, the dashboard open, and the methodology page. These must be captured
-      from a real browser session.
-- [ ] **Small promo tile** (440×280), optional but it improves placement.
+- [x] **Icon.** Source of truth: `apps/extension/assets/logo.png` — the cloud logo with the
+      painted checkerboard removed (the delivered file had no alpha channel), cropped and
+      squared with an 8% margin. `node scripts/make-icons.mjs assets/logo.png` regenerates
+      the three sizes. At 16 px the wordmark is unreadable; that size only appears in
+      `chrome://extensions` since the extension has no toolbar button.
+- [x] **Small promo tile** (440×280): `apps/extension/assets/store/promo-tile-440x280.png`,
+      the logo centred on white.
+- [ ] **Screenshots** (1280×800, PNG/JPEG, no transparency, 1 to 5). To capture from a real
+      session — see "Screenshots to take" below.
+
+### Screenshots to take
+
+Same window size for all of them, light theme, French interface, a real conversation (not
+lorem ipsum, but nothing personal — the message text will be public).
+
+1. **The badge in place** on claude.ai, bottom right of a conversation, showing a non-zero
+   total. This is the one people see first: it should say "small, unobtrusive".
+2. **The dashboard open**, on the same page, with a few responses counted so the numbers
+   and the uncertainty range are meaningful. Equivalent set to "Voiture (km)".
+3. **The same dashboard on chatgpt.com**, to show it is not tied to one site.
+4. **The methodology page** (the link in the dashboard), scrolled to the formula — the
+   honesty is the pitch.
+5. Optional: **the onboarding question**.
+
+Capturing at exactly 1280×800 on macOS: in Chrome, open DevTools (⌥⌘I), toggle the device
+toolbar (⇧⌘M), set "Responsive" to 1280 × 800, then ⇧⌘P → "Capture screenshot". The
+extension's content script runs inside the emulated view like anywhere else. Check the
+result with `sips -g pixelWidth -g pixelHeight <file>`.
