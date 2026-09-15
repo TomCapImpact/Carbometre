@@ -1,6 +1,6 @@
 {
   "name": "@carbometre/extension",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Carbomètre browser extension: badge + dashboard for the calculation engine in @carbometre/core.",
   "license": "MIT",
   "private": true,

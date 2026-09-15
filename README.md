@@ -21,8 +21,10 @@ This matters more than the feature list, so it comes first.
 - **No network requests, ever.** The extension never contacts any server, including ours.
   There is no analytics, no crash reporting, no remote configuration.
 - **No message content is stored.** Storage holds per-conversation totals, response
-  counts and a per-day emissions ledger — numbers and identifiers only. Your prompts and
-  the replies never leave the page and are never written anywhere.
+  counts, a cumulative total with its reset date, a per-day emissions ledger, and two
+  settings (your answer to "mainly in France / mainly elsewhere", and which equivalent
+  you picked), plus an all-time total — numbers and identifiers only. Your prompts and the replies never leave
+  the page and are never written anywhere.
 - **Only what is already on screen is read.** Emissions are estimated from the rendered
   text of an exchange. The extension does not intercept network traffic and therefore
   never sees your full request payload, system prompts, or attachments.
@@ -57,13 +59,22 @@ Then in Chrome:
 > The `--load-extension` command-line flag does **not** work on stable Google Chrome
 > (it is ignored with a warning). Loading through the UI is the only way.
 
+On first install a page asks one question — are you mainly in France, or mainly
+elsewhere? It changes one rule of the calculation (see
+[`docs/METHODOLOGY.md` §5](docs/METHODOLOGY.md#5-grid-carbon-intensity)). It can be
+changed later from the dashboard, behind a confirmation: past estimates are never
+recalculated, so the change only affects the responses that follow.
+
 Open one of the supported sites. A small floating badge appears; drag it wherever you
-like — it remembers its position per site. Click it for the dashboard.
+like — it remembers its position per site. Click it for the dashboard: this
+conversation, the cumulative total since you last reset it (with a "details" view of the
+all-time and month-to-date totals), and that total expressed as kilometres by car or by
+plane.
 
 ### Development
 
 ```bash
-pnpm -r run test        # 147 tests, plus the FR/EN catalogue parity check
+pnpm -r run test        # 189 tests, plus the FR/EN catalogue parity check
 pnpm --filter @carbometre/extension run typecheck
 pnpm -r run build       # rebuild; then hit reload in chrome://extensions
 ```
@@ -97,7 +108,9 @@ CarbometerService                  facade: estimate(EstimateInput) -> Estimate
         └── EmissionModel          «interface»  estimate(usage, profile)
               └── TokenBasedEmissionModel
                     └── GridIntensityProvider   «interface»  intensityFor(profile)
-                          ├── DatacenterGridProvider   regionId -> regions.json  (default)
+                          ├── UserLocationGridProvider  decorator: French mix for EU-hosted
+                          │     └── DatacenterGridProvider  models when the user is in France
+                          ├── DatacenterGridProvider   regionId -> regions.json
                           └── FrenchGridProvider       fixed French mix (comparison mode)
 
 domain/
@@ -105,9 +118,11 @@ domain/
   TokenUsage      immutable; tokensIn / tokensOut / thinkingTokens
   ModelProfile    immutable; every coefficient for one model
   Conversation    entity; id, providerId, running total, addEstimate(), reset()
+  UserLocation    'fr' | 'other'; UserLocationSink for things that react to it
 
 equivalence/
-  CarEquivalence  gCO2eToCarKm() for the dashboard's "equivalent" figure
+  Equivalence         «interface»  unitsFor(gCO2e); FixedFactorEquivalence
+  EquivalenceCatalog  id -> Equivalence (car km, plane km)
 ```
 
 Everything is constructor-injected. There are no singletons and no module-level mutable
@@ -131,11 +146,18 @@ adapters/
 storage/
   ConversationRepository       «interface» ── ChromeStorageConversationRepository
   UsageHistoryRepository       «interface» ── ChromeStorageUsageHistoryRepository
+  SettingsRepository           «interface» ── ChromeStorageSettingsRepository
 
 ui/
-  CarbometerPresenter     holds service + repositories, feeds the views
+  CarbometerPresenter     holds service + repositories, feeds the views, applies settings
   BadgeView               the floating, draggable bubble
-  DashboardView           the three-number panel
+  DashboardView           the panel: numbers, reset, equivalence and location pickers;
+                          follows the badge while it is dragged
+  Confirmation            «interface» ── ModalConfirmation   the "are you sure?" modal
+  OnboardingPage          drives onboarding.html (the install-time location question)
+
+background.ts             service worker; opens onboarding.html once, on install
+onboarding.ts             second composition root, for the onboarding page
 ```
 
 ---

@@ -145,3 +145,162 @@
   color: inherit;
   text-decoration: underline;
 }
+
+/* Controls inside the dashboard: the reset button and the two selects. */
+.carbometre-dashboard-reset {
+  all: unset;
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.carbometre-dashboard-reset--armed {
+  font-weight: 600;
+  text-decoration: none;
+  padding: 2px 6px;
+  border: 1px solid currentColor;
+}
+
+.carbometre-dashboard-reset:focus-visible,
+.carbometre-dashboard-select:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.carbometre-dashboard-select {
+  display: block;
+  margin-top: 4px;
+  max-width: 100%;
+  font: inherit;
+  font-size: 12px;
+  color: inherit;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  padding: 3px 6px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .carbometre-dashboard-select {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .carbometre-dashboard-select option {
+    background: #2a2a2a;
+  }
+}
+
+/* "Reset" and "Details" side by side under the cumulative total. */
+.carbometre-dashboard-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.carbometre-dashboard-details-toggle {
+  all: unset;
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.carbometre-dashboard-details-toggle:focus-visible,
+.carbometre-dashboard-confirm-button:focus-visible,
+.carbometre-dashboard-cancel-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.carbometre-dashboard-details {
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: 11px;
+  color: #595959;
+}
+
+@media (prefers-color-scheme: dark) {
+  .carbometre-dashboard-details {
+    color: #c7c7c7;
+  }
+}
+
+.carbometre-dashboard-detail {
+  margin: 0 0 2px;
+}
+
+/*
+ * Confirmation modal (location change). Appended to <body> after the
+ * dashboard, same z-index, so it paints above it. Own colours, like the
+ * dashboard, for the same reason.
+ */
+.carbometre-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.carbometre-modal {
+  box-sizing: border-box;
+  width: min(360px, calc(100vw - 32px));
+  padding: 18px;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .carbometre-modal {
+    background: #2a2a2a;
+    color: #f5f5f5;
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+}
+
+.carbometre-modal-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.carbometre-modal-message {
+  margin: 0 0 14px;
+}
+
+.carbometre-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.carbometre-modal-confirm,
+.carbometre-modal-cancel {
+  all: unset;
+  cursor: pointer;
+  font: inherit;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid currentColor;
+}
+
+.carbometre-modal-confirm {
+  font-weight: 600;
+}
+
+.carbometre-modal-confirm:focus-visible,
+.carbometre-modal-cancel:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

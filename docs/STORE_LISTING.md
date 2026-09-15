@@ -34,8 +34,12 @@ emissions they cause.
 
 A small floating badge shows the running total for the conversation you are in. Drag it
 anywhere on the page — it stays where you put it. Click it for a short dashboard: this
-conversation, the last 30 days, and what that is worth in kilometres driven by an
-average car.
+conversation, your cumulative total since you last reset it, and what that is worth in
+kilometres by car or by plane — your choice.
+
+On install, one question: are you mainly in France, or mainly elsewhere? It adjusts
+one rule of the calculation for European-hosted models. It can be changed later from
+the dashboard.
 
 Works on claude.ai, chatgpt.com and chat.mistral.ai. Interface in French and English.
 
@@ -58,8 +62,9 @@ PRIVACY
 
 - No network requests at all. The extension never contacts any server, including ours.
 - No analytics, no crash reporting, no remote configuration, no account.
-- Your messages are never stored. Only per-conversation totals, response counts and a
-  per-day emissions ledger are saved — numbers, never content.
+- Your messages are never stored. Only per-conversation totals, response counts, a
+  cumulative total, a per-day emissions ledger and your two settings (location answer,
+  chosen comparison) are saved — numbers, never content.
 - Everything stays in your browser's local storage, on your machine.
 
 The "storage" permission is used for exactly that and nothing else.
@@ -91,8 +96,12 @@ Carbomètre met un chiffre sur vos conversations avec une IA : une estimation de
 
 Une petite pastille flottante affiche le total courant de la conversation en cours.
 Déplacez-la où vous voulez sur la page, elle y reste. Un clic ouvre un tableau de bord
-court : cette conversation, les 30 derniers jours, et l'équivalent en kilomètres
-parcourus par une voiture moyenne.
+court : cette conversation, votre total cumulé depuis la dernière remise à zéro, et son
+équivalent en kilomètres en voiture ou en avion — au choix.
+
+À l'installation, une seule question : êtes-vous principalement en France, ou
+principalement ailleurs ? Elle ajuste une règle du calcul pour les modèles hébergés en
+Europe. Modifiable ensuite depuis le tableau de bord.
 
 Fonctionne sur claude.ai, chatgpt.com et chat.mistral.ai. Interface en français et en
 anglais.
@@ -119,8 +128,8 @@ CONFIDENTIALITÉ
 - Aucune analyse d'usage, aucun rapport d'erreur, aucune configuration distante, aucun
   compte.
 - Vos messages ne sont jamais stockés. Seuls sont conservés les totaux par conversation,
-  le nombre de réponses et un relevé d'émissions par jour — des nombres, jamais du
-  contenu.
+  le nombre de réponses, un total cumulé, un relevé d'émissions par jour et vos deux
+  réglages (localisation, équivalent choisi) — des nombres, jamais du contenu.
 - Tout reste dans le stockage local de votre navigateur, sur votre machine.
 
 La permission « storage » sert exactement à cela, et à rien d'autre.
@@ -137,9 +146,12 @@ Chrome asks for these in the developer dashboard.
 **`storage`**
 
 ```
-Stores the running emissions total per conversation, the number of responses seen, and a
-per-day emissions total, so the badge can show a conversation's total again when the user
-returns to it. Numbers only; message content is never stored. Nothing is transmitted.
+Stores the running emissions total per conversation, the number of responses seen, a
+cumulative total with its reset date, an all-time total, a per-day emissions total, and
+two user settings
+(location answer, chosen comparison unit), so the badge can show a conversation's total
+again when the user returns to it. Numbers only; message content is never stored.
+Nothing is transmitted.
 ```
 
 **Host access to claude.ai, chatgpt.com, chat.openai.com, chat.mistral.ai**
@@ -151,7 +163,12 @@ text and the model name shown in the interface. It makes no network requests and
 nothing anywhere.
 ```
 
-**Remote code**: none. Everything runs from the bundled `content.js`.
+**Background service worker**: registers one listener, `chrome.runtime.onInstalled`, to
+open the onboarding page once on first install. No alarms, no messaging, no network.
+Opening the tab uses `chrome.tabs.create`, which needs no `tabs` permission.
+
+**Remote code**: none. Everything runs from the bundled `content.js`, `background.js`
+and `onboarding.js`.
 
 ---
 

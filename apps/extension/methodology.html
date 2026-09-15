@@ -44,8 +44,24 @@ gCO2e         = electricityG + embodiedG</code></pre>
     génération de la réponse.
   </p>
 
-  <h2>Équivalent voiture</h2>
-  <p>125 gCO2e/km, moyenne du parc automobile en conditions réelles (les voitures neuves européennes sont à 106,7 g/km sur cycle WLTP, hors production du carburant et du véhicule).</p>
+  <h2>Réseau électrique et localisation</h2>
+  <p>
+    Le facteur d'émission du réseau est celui du centre de données qui sert le
+    modèle (États-Unis pour Claude et ChatGPT, Europe pour Mistral), jamais
+    celui de l'utilisateur. Une seule règle dépend de votre réponse à la
+    question d'installation : si vous êtes principalement en France, les
+    modèles hébergés en Europe sont comptés avec le mix électrique français
+    (30 gCO2e/kWh, RTE 2024, cycle de vie) au lieu de la moyenne irlandaise.
+    Les modèles hébergés aux États-Unis ne changent pas : l'électricité y est
+    consommée quel que soit l'endroit d'où l'on pose la question.
+  </p>
+
+  <h2>Équivalents</h2>
+  <ul>
+    <li><strong>Voiture</strong> : 125 gCO2e/km, moyenne du parc automobile en conditions réelles (les voitures neuves européennes sont à 106,7 g/km sur cycle WLTP, hors production du carburant et du véhicule).</li>
+    <li><strong>Avion</strong> : 258 gCO2e par passager-kilomètre, court-courrier, traînées incluses (ADEME, Base Empreinte).</li>
+  </ul>
+  <p>Ils s'appliquent au total cumulé depuis la dernière remise à zéro, toutes conversations confondues. Les réponses déjà comptées ne sont jamais recalculées : un changement de localisation n'agit que sur les réponses suivantes.</p>
 
   <h2>Limites connues</h2>
   <ul>
@@ -79,8 +95,23 @@ gCO2e         = electricityG + embodiedG</code></pre>
     heavily parallelised, so far cheaper per token than generating the reply.
   </p>
 
-  <h2>Car equivalent</h2>
-  <p>125 gCO2e/km, a real-world fleet average (new EU cars measure 106.7 g/km on the WLTP test cycle, excluding fuel and vehicle production).</p>
+  <h2>Grid and location</h2>
+  <p>
+    The grid emission factor is that of the datacentre serving the model
+    (United States for Claude and ChatGPT, Europe for Mistral), never the
+    user's. One rule depends on your answer to the install-time question: if
+    you are mainly in France, models hosted in Europe are counted at the
+    French grid mix (30 gCO2e/kWh, RTE 2024, lifecycle) instead of the Irish
+    average. US-hosted models are unchanged: the electricity is drawn there
+    wherever the question is asked from.
+  </p>
+
+  <h2>Equivalents</h2>
+  <ul>
+    <li><strong>Car</strong>: 125 gCO2e/km, a real-world fleet average (new EU cars measure 106.7 g/km on the WLTP test cycle, excluding fuel and vehicle production).</li>
+    <li><strong>Plane</strong>: 258 gCO2e per passenger-kilometre, short-haul, contrails included (ADEME, Base Empreinte).</li>
+  </ul>
+  <p>They apply to the cumulative total since the last reset, across every conversation. Responses already counted are never recalculated: a location change only affects the responses that follow.</p>
 
   <h2>Known limitations</h2>
   <ul>

@@ -149,6 +149,20 @@ Three rules govern this:
 3. **No live data in v1.** The extension makes no network calls at all. An hourly
    carbon-intensity API would require only a new class implementing
    `GridIntensityProvider` — the architecture allows it; v1 does not do it.
+4. **One exception, chosen by the user.** At install time the extension asks whether the
+   user is mainly in France or mainly elsewhere. If **France**, models hosted in Europe
+   (`eu-*` regions — today, Mistral) are charged the French mix of 30 gCO2e/kWh instead
+   of the Irish average. US-hosted models are unaffected: the electricity is drawn in
+   Virginia whoever asks. Applying the French mix to those too was considered and
+   declined — it would understate them ~12×. Until the question is answered, "elsewhere"
+   applies, i.e. rule 1 alone. Implementation:
+   [`UserLocationGridProvider`](../packages/core/src/grid/UserLocationGridProvider.ts).
+
+> **Status of rule 4: a deliberate simplification.** It is not a location-based claim
+> about Mistral's electricity (which is drawn in Sweden and Ireland). It is a
+> single, explicable rule chosen so that the tool has one meaningful difference for
+> French users, on the provider most likely to actually serve them from Europe. The
+> bias is downward, by roughly 290/30 ≈ 10× on Mistral traffic, for French users only.
 
 The French figure comes from [RTE's 2024 annual electricity review](https://analysesetdonnees.rte-france.com/en/annual-review-2024/keyfindings):
 **21.7 gCO2eq/kWh** for generation, **30.2 gCO2eq/kWh** on a lifecycle basis. We use the
@@ -223,13 +237,19 @@ currently do, so no profile deviates from 3.0.
 
 ---
 
-## 10. Car equivalent
+## 10. Equivalents
 
-**Value used: 125 gCO2e/km**, applied to the 30-day total to produce the dashboard's
-"equivalent" figure.
+The dashboard expresses the cumulative total (every conversation, since the last reset)
+in one everyday unit, chosen by the user. Both are linear factors; implementation
+in [`EquivalenceCatalog`](../packages/core/src/equivalence/EquivalenceCatalog.ts).
 
-This is a *fleet-average, real-world* figure, not a new-car test figure. For comparison,
-the [EEA's monitoring of new passenger cars](https://www.eea.europa.eu/en/analysis/indicators/co2-performance-of-new-passenger)
+The dashboard's "details" also shows the total since the extension was installed (never
+reset) and since the first day of the current month, in gCO2e only.
+
+### Car — 125 gCO2e/km
+
+A *fleet-average, real-world* figure, not a new-car test figure. For comparison, the
+[EEA's monitoring of new passenger cars](https://www.eea.europa.eu/en/analysis/indicators/co2-performance-of-new-passenger)
 reports **106.7 gCO₂/km** for cars newly registered in the EU in 2024, measured on the
 WLTP test cycle. Our figure is higher because:
 
@@ -239,6 +259,25 @@ WLTP test cycle. Our figure is higher because:
   typically higher, and neither fuel production nor vehicle manufacturing is included.
 
 > **Status: defensible, but not traced to a single published fleet-average source.**
+
+### Plane — 258 gCO2e per passenger-kilometre
+
+Short-haul (< 1000 km) passenger flight, contrails included, from
+[ADEME's Base Empreinte](https://base-empreinte.ademe.fr/). Short-haul is the right
+reference at the scale of grams: it is the per-kilometre worst case (take-off and
+landing dominate), and it is the flight most people can picture. Long-haul is roughly
+150 g/pkm; using it would make the same emissions "fly further".
+
+> **Status: sourced.** The contrail component is itself uncertain by about a factor of
+> 2 in the literature; ADEME's figure includes it at their central estimate.
+
+### Why there is no "hours of air conditioning"
+
+It was built and removed. Its factor depends on the user's own electricity, so a French
+user who answered "France" saw the number of hours jump ~15× for the same emissions —
+correct, and read by everyone as "my emissions went up". An equivalent that moves with
+the user's location confuses more than it explains; the two that remain are physical
+constants of the vehicle.
 
 ---
 
@@ -265,7 +304,10 @@ In rough order of how much they can distort the result:
    per-request energy depends on load, which we cannot observe.
 8. **Training emissions are excluded entirely.** Only inference is counted. Amortising
    training across queries is a defensible alternative choice; we do not make it.
-9. **Model identification can fail.** When the model cannot be identified from the page,
+9. **The French-user rule (§5, rule 4) is a simplification**, not a measurement of where
+   Mistral draws its electricity. It lowers Mistral estimates ~10× for users who answered
+   "France", and nothing else.
+10. **Model identification can fail.** When the model cannot be identified from the page,
    the estimate falls back to the provider's default tier and is marked
    `confidence: 'guessed'`. It is still counted, but with less basis.
 

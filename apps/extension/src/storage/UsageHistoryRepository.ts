@@ -1,11 +1,31 @@
+/** A running total across every conversation, and the moment it started counting. */
+export interface CumulativeUsage {
+  readonly gCO2e: number;
+  readonly since: Date;
+}
+
 /**
- * Tracks total gCO2e per calendar day, across every conversation and
- * provider - the cross-conversation ledger the dashboard's "last 30 days"
- * figure is summed from. Deliberately separate from ConversationRepository:
- * that one is about a single conversation's running total and reset
- * semantics, this one is about a rolling window across all of them.
+ * Tracks gCO2e across every conversation and provider - the cross-
+ * conversation figures the dashboard shows. Deliberately separate from
+ * ConversationRepository: that one is about a single conversation's running
+ * total, this one is about all of them together.
+ *
+ * Three views of the same recordings:
+ *  - `cumulative()`: everything since the user last pressed reset. The
+ *    dashboard's headline figure.
+ *  - `allTime()`: everything since the extension was installed. Reset never
+ *    touches it - it exists so a reset is not a way to lose the answer to
+ *    "how much, in total?".
+ *  - `totalSince()` / `totalForLastDays()`: sums over a calendar-day ledger,
+ *    for "this month" and the export feature of the Options page. Reset
+ *    does not touch the ledger either.
  */
 export interface UsageHistoryRepository {
   record(gCO2e: number, on?: Date): Promise<void>;
   totalForLastDays(days: number, now?: Date): Promise<number>;
+  /** Sum of the daily ledger from the calendar day containing `start` (UTC), inclusive. */
+  totalSince(start: Date): Promise<number>;
+  cumulative(now?: Date): Promise<CumulativeUsage>;
+  allTime(now?: Date): Promise<CumulativeUsage>;
+  reset(now?: Date): Promise<void>;
 }

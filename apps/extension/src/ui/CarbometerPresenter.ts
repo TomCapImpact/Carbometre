@@ -1,21 +1,54 @@
-import { type CarbometerService, Conversation, Estimate, gCO2eToCarKm } from '@carbometre/core';
+import {
+  type CarbometerService,
+  Conversation,
+  DEFAULT_USER_LOCATION,
+  type EquivalenceCatalog,
+  type EquivalenceId,
+  Estimate,
+  type UserLocation,
+  type UserLocationSink,
+} from '@carbometre/core';
 import { observeUrlChanges } from '../adapters/observeUrlChanges.js';
 import type { RawResponse, SiteAdapter } from '../adapters/SiteAdapter.js';
+import { MESSAGE_KEYS } from '../i18n/messageKeys.js';
 import { resolveUiLanguage } from '../i18n/resolveUiLanguage.js';
 import type { Messages } from '../i18n/Messages.js';
 import type { ConversationRepository } from '../storage/ConversationRepository.js';
+import { DEFAULT_SETTINGS } from '../storage/ChromeStorageSettingsRepository.js';
+import type { Settings, SettingsRepository } from '../storage/SettingsRepository.js';
 import type { UsageHistoryRepository } from '../storage/UsageHistoryRepository.js';
 import type { Unsubscribe } from '../types.js';
 import { BadgeView } from './BadgeView.js';
-import { DashboardView } from './DashboardView.js';
+import type { Confirmation } from './Confirmation.js';
+import { type DashboardData, DashboardView } from './DashboardView.js';
 
-const DASHBOARD_WINDOW_DAYS = 30;
 /**
  * Passed to the service when the site's model picker can't be read, so
  * ModelRegistry falls through to the adapter's fallback tier. Any id that
  * isn't in the catalog works; this one just reads clearly in a stack trace.
  */
 const UNKNOWN_MODEL_ID = 'unknown-model';
+
+/** UTC, to match the usage ledger's UTC calendar days. */
+function startOfUtcMonth(now: Date): Date {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+}
+
+/** Everything the presenter is wired with, named - nine positional arguments stopped being readable. */
+export interface PresenterDependencies {
+  readonly adapter: SiteAdapter;
+  readonly service: CarbometerService;
+  readonly conversations: ConversationRepository;
+  readonly usageHistory: UsageHistoryRepository;
+  readonly settings: SettingsRepository;
+  /** Told the user's location so future estimates use the matching grid rule. */
+  readonly locationSink: UserLocationSink;
+  readonly equivalences: EquivalenceCatalog;
+  readonly confirmation: Confirmation;
+  readonly messages: Messages;
+  readonly methodologyUrl: string;
+  readonly doc?: Document;
+}
 
 /**
  * Holds the service and repositories, feeds the badge and dashboard. This is
@@ -26,24 +59,45 @@ const UNKNOWN_MODEL_ID = 'unknown-model';
  * nothing site-specific to wait for or fall back from here.
  */
 export class CarbometerPresenter {
+  private readonly adapter: SiteAdapter;
+  private readonly service: CarbometerService;
+  private readonly conversations: ConversationRepository;
+  private readonly usageHistory: UsageHistoryRepository;
+  private readonly settingsRepository: SettingsRepository;
+  private readonly locationSink: UserLocationSink;
+  private readonly equivalences: EquivalenceCatalog;
+  private readonly confirmation: Confirmation;
+  private readonly messages: Messages;
   private readonly dashboard: DashboardView;
   private readonly badge: BadgeView;
+  private settings: Settings = DEFAULT_SETTINGS;
   private conversation: Conversation | null = null;
   private lastConversationId: string | null = null;
   private stopObservingResponses: Unsubscribe | null = null;
   private stopObservingUrl: Unsubscribe | null = null;
 
-  constructor(
-    private readonly adapter: SiteAdapter,
-    private readonly service: CarbometerService,
-    private readonly repository: ConversationRepository,
-    private readonly usageHistory: UsageHistoryRepository,
-    private readonly messages: Messages,
-    methodologyUrl: string,
-    private readonly doc: Document = document,
-  ) {
-    this.dashboard = new DashboardView(doc, messages, methodologyUrl);
-    this.badge = new BadgeView(doc, messages, () => this.runDetached(this.toggleDashboard()));
+  constructor(deps: PresenterDependencies) {
+    this.adapter = deps.adapter;
+    this.service = deps.service;
+    this.conversations = deps.conversations;
+    this.usageHistory = deps.usageHistory;
+    this.settingsRepository = deps.settings;
+    this.locationSink = deps.locationSink;
+    this.equivalences = deps.equivalences;
+    this.confirmation = deps.confirmation;
+    this.messages = deps.messages;
+    const doc = deps.doc ?? document;
+    this.dashboard = new DashboardView(doc, deps.messages, deps.methodologyUrl, {
+      onReset: () => this.runDetached(this.resetCumulative()),
+      onEquivalenceChange: (id) => this.runDetached(this.changeEquivalence(id)),
+      onUserLocationRequested: (location) => this.runDetached(this.requestUserLocationChange(location)),
+    });
+    this.badge = new BadgeView(
+      doc,
+      deps.messages,
+      () => this.runDetached(this.toggleDashboard()),
+      () => this.dashboard.follow(),
+    );
   }
 
   start(): void {
@@ -53,6 +107,7 @@ export class CarbometerPresenter {
     this.stopObservingResponses = this.adapter.observeResponses((response) =>
       this.runDetached(this.handleResponse(response)),
     );
+    this.runDetached(this.loadSettings());
     this.runDetached(this.handleConversationChange());
   }
 
@@ -75,18 +130,79 @@ export class CarbometerPresenter {
     });
   }
 
+  private async loadSettings(): Promise<void> {
+    this.applySettings(await this.settingsRepository.load());
+  }
+
+  private applySettings(settings: Settings): void {
+    this.settings = settings;
+    this.locationSink.setUserLocation(settings.userLocation ?? DEFAULT_USER_LOCATION);
+  }
+
+  private async saveSettings(settings: Settings): Promise<void> {
+    this.applySettings(settings);
+    await this.settingsRepository.save(settings);
+    await this.refreshDashboard();
+  }
+
   private async toggleDashboard(): Promise<void> {
     if (this.dashboard.isOpen()) {
       this.dashboard.close();
       return;
     }
-    const conversationTotal = this.conversation?.total ?? Estimate.zero();
-    const last30DaysGCO2e = await this.usageHistory.totalForLastDays(DASHBOARD_WINDOW_DAYS);
-    this.dashboard.open(this.badge.element, {
-      conversationTotal,
-      last30DaysGCO2e,
-      equivalentKm: gCO2eToCarKm(last30DaysGCO2e),
+    this.dashboard.open(this.badge.element, await this.dashboardData());
+  }
+
+  private async refreshDashboard(): Promise<void> {
+    if (this.dashboard.isOpen()) {
+      this.dashboard.update(await this.dashboardData());
+    }
+  }
+
+  private async dashboardData(now: Date = new Date()): Promise<DashboardData> {
+    const [cumulative, allTime, monthToDate] = await Promise.all([
+      this.usageHistory.cumulative(now),
+      this.usageHistory.allTime(now),
+      this.usageHistory.totalSince(startOfUtcMonth(now)),
+    ]);
+    const equivalence = this.equivalences.resolve(this.settings.equivalenceId);
+    return {
+      conversationTotal: this.conversation?.total ?? Estimate.zero(),
+      cumulative,
+      allTime,
+      monthToDate,
+      equivalenceId: equivalence.id,
+      equivalentUnits: equivalence.unitsFor(cumulative.gCO2e),
+      userLocation: this.settings.userLocation,
+    };
+  }
+
+  private async resetCumulative(): Promise<void> {
+    await this.usageHistory.reset();
+    await this.refreshDashboard();
+  }
+
+  private changeEquivalence(equivalenceId: EquivalenceId): Promise<void> {
+    return this.saveSettings({ ...this.settings, equivalenceId });
+  }
+
+  /**
+   * Confirmed in a modal because the consequence is easy to misread: past
+   * estimates are never recalculated, so the totals will not move. On
+   * cancel the dashboard is re-rendered, which puts the select back.
+   */
+  private async requestUserLocationChange(userLocation: UserLocation): Promise<void> {
+    const confirmed = await this.confirmation.ask({
+      title: this.messages.get(MESSAGE_KEYS.locationChangeTitle),
+      message: this.messages.get(MESSAGE_KEYS.locationChangeWarning),
+      confirmLabel: this.messages.get(MESSAGE_KEYS.locationChangeConfirmLabel),
+      cancelLabel: this.messages.get(MESSAGE_KEYS.locationChangeCancelLabel),
     });
+    if (confirmed) {
+      await this.saveSettings({ ...this.settings, userLocation });
+    } else {
+      await this.refreshDashboard();
+    }
   }
 
   private renderBadge(): void {
@@ -104,7 +220,7 @@ export class CarbometerPresenter {
     }
     this.lastConversationId = id;
 
-    this.conversation = id ? (await this.repository.load(id)) ?? new Conversation(id, this.adapter.providerId) : null;
+    this.conversation = id ? (await this.conversations.load(id)) ?? new Conversation(id, this.adapter.providerId) : null;
     this.renderBadge();
   }
 
@@ -132,6 +248,7 @@ export class CarbometerPresenter {
 
     this.conversation.addEstimate(estimate);
     this.renderBadge();
-    await Promise.all([this.repository.save(this.conversation), this.usageHistory.record(estimate.gCO2e)]);
+    await Promise.all([this.conversations.save(this.conversation), this.usageHistory.record(estimate.gCO2e)]);
+    await this.refreshDashboard();
   }
 }

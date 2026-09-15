@@ -1,6 +1,6 @@
 {
   "name": "@carbometre/core",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Carbomètre calculation engine: estimates the greenhouse gas emissions of an LLM conversation from visible token counts.",
   "license": "MIT",
   "type": "module",

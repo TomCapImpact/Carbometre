@@ -8,7 +8,9 @@
   "badgeAriaLabel": {
     "message": "Emissions for this conversation: $AMOUNT$. Click for details.",
     "placeholders": {
-      "amount": { "content": "$1" }
+      "amount": {
+        "content": "$1"
+      }
     }
   },
   "badgeUnavailableAriaLabel": {
@@ -26,19 +28,108 @@
   "dashboardConversationTooltip": {
     "message": "Estimate. Method: tokens × emission factor. Uncertainty margin of a factor of 3."
   },
-  "dashboardLast30DaysLabel": {
-    "message": "Last 30 days"
-  },
   "dashboardEquivalentLabel": {
     "message": "Equivalent"
   },
-  "dashboardEquivalentValue": {
-    "message": "$AMOUNT$ by car",
-    "placeholders": {
-      "amount": { "content": "$1" }
-    }
-  },
   "dashboardMethodologyLink": {
     "message": "Methodology"
+  },
+  "dashboardSinceLabel": {
+    "message": "Since $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "dashboardResetLabel": {
+    "message": "Reset"
+  },
+  "dashboardResetConfirmLabel": {
+    "message": "Confirm reset"
+  },
+  "dashboardResetAriaLabel": {
+    "message": "Reset the cumulative total"
+  },
+  "equivalenceSelectLabel": {
+    "message": "Choose the comparison"
+  },
+  "equivalenceOptionCarKm": {
+    "message": "Car (km)"
+  },
+  "equivalenceOptionPlaneKm": {
+    "message": "Plane (km)"
+  },
+  "equivalentValueCarKm": {
+    "message": "$AMOUNT$ km by car",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      }
+    }
+  },
+  "equivalentValuePlaneKm": {
+    "message": "$AMOUNT$ km by plane",
+    "placeholders": {
+      "amount": {
+        "content": "$1"
+      }
+    }
+  },
+  "dashboardLocationLabel": {
+    "message": "Location"
+  },
+  "locationSelectLabel": {
+    "message": "Where are you mainly based?"
+  },
+  "locationOptionFr": {
+    "message": "Mainly in France"
+  },
+  "locationOptionOther": {
+    "message": "Mainly outside France"
+  },
+  "locationUnset": {
+    "message": "Not set"
+  },
+  "onboardingTitle": {
+    "message": "Welcome to Carbomètre"
+  },
+  "onboardingQuestion": {
+    "message": "To refine the estimate of your emissions, tell us where you are mainly based:"
+  },
+  "onboardingExplanation": {
+    "message": "In France, models hosted in Europe are counted at the French grid mix (30 gCO2e/kWh); US-hosted models keep their own datacentre factor. You can change this at any time from the dashboard, and it never leaves your device."
+  },
+  "onboardingDone": {
+    "message": "Saved. You can close this tab: the Carbomètre badge will appear on claude.ai, chatgpt.com and chat.mistral.ai."
+  },
+  "dashboardDetailsLabel": {
+    "message": "Details"
+  },
+  "dashboardDetailsHideLabel": {
+    "message": "Hide details"
+  },
+  "dashboardSinceInstallLabel": {
+    "message": "Since install ($DATE$)",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "dashboardMonthToDateLabel": {
+    "message": "Since the start of the month"
+  },
+  "locationChangeTitle": {
+    "message": "Change location?"
+  },
+  "locationChangeWarning": {
+    "message": "Responses already counted are never recalculated: the new location only applies to the next responses. If a total went up between two looks, a new response was counted."
+  },
+  "locationChangeConfirmLabel": {
+    "message": "Confirm the change"
+  },
+  "locationChangeCancelLabel": {
+    "message": "Cancel"
   }
 }

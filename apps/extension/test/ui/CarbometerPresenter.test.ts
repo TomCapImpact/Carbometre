@@ -2,17 +2,23 @@ import {
   CarbometerService,
   DatacenterGridProvider,
   EmissionModelRegistry,
+  EquivalenceCatalog,
   HeuristicTokenizer,
   ModelRegistry,
   type ModelProfileProps,
   TokenBasedEmissionModel,
+  type UserLocation,
+  type UserLocationSink,
 } from '@carbometre/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { type RawResponse, SiteAdapter } from '../../src/adapters/SiteAdapter.js';
 import type { Messages } from '../../src/i18n/Messages.js';
 import type { ConversationRepository } from '../../src/storage/ConversationRepository.js';
-import type { UsageHistoryRepository } from '../../src/storage/UsageHistoryRepository.js';
+import { DEFAULT_SETTINGS } from '../../src/storage/ChromeStorageSettingsRepository.js';
+import type { Settings, SettingsRepository } from '../../src/storage/SettingsRepository.js';
+import type { CumulativeUsage, UsageHistoryRepository } from '../../src/storage/UsageHistoryRepository.js';
 import { CarbometerPresenter } from '../../src/ui/CarbometerPresenter.js';
+import type { Confirmation, ConfirmationRequest } from '../../src/ui/Confirmation.js';
 import type { Conversation, FallbackHint } from '@carbometre/core';
 
 const METHODOLOGY_URL = 'https://example.invalid/methodology.html';
@@ -87,13 +93,63 @@ class StubMessages implements Messages {
 
 class InMemoryUsageHistoryRepository implements UsageHistoryRepository {
   private total = 0;
+  private lifetime = 0;
+  private since = new Date('2026-09-01T00:00:00Z');
 
   async record(gCO2e: number): Promise<void> {
     this.total += gCO2e;
+    this.lifetime += gCO2e;
   }
 
   async totalForLastDays(): Promise<number> {
-    return this.total;
+    return this.lifetime;
+  }
+
+  async totalSince(): Promise<number> {
+    return this.lifetime;
+  }
+
+  async cumulative(): Promise<CumulativeUsage> {
+    return { gCO2e: this.total, since: this.since };
+  }
+
+  async allTime(): Promise<CumulativeUsage> {
+    return { gCO2e: this.lifetime, since: new Date('2026-08-01T00:00:00Z') };
+  }
+
+  async reset(now: Date = new Date('2026-09-15T00:00:00Z')): Promise<void> {
+    this.total = 0;
+    this.since = now;
+  }
+}
+
+class InMemorySettingsRepository implements SettingsRepository {
+  constructor(public settings: Settings = DEFAULT_SETTINGS) {}
+
+  async load(): Promise<Settings> {
+    return this.settings;
+  }
+
+  async save(settings: Settings): Promise<void> {
+    this.settings = settings;
+  }
+}
+
+class ScriptedConfirmation implements Confirmation {
+  readonly requests: ConfirmationRequest[] = [];
+  constructor(private readonly answer: boolean) {}
+
+  async ask(request: ConfirmationRequest): Promise<boolean> {
+    this.requests.push(request);
+    return this.answer;
+  }
+}
+
+class RecordingLocationSink implements UserLocationSink {
+  readonly received: UserLocation[] = [];
+
+  setUserLocation(location: UserLocation): void {
+    this.received.push(location);
   }
 }
 
@@ -105,16 +161,45 @@ function buildService(): CarbometerService {
   );
 }
 
-function buildPresenter(adapter: StubAdapter, repository: InMemoryConversationRepository): CarbometerPresenter {
-  return new CarbometerPresenter(
+interface Harness {
+  readonly presenter: CarbometerPresenter;
+  readonly usageHistory: InMemoryUsageHistoryRepository;
+  readonly settings: InMemorySettingsRepository;
+  readonly locationSink: RecordingLocationSink;
+  readonly confirmation: ScriptedConfirmation;
+}
+
+function buildHarness(
+  adapter: StubAdapter,
+  repository: InMemoryConversationRepository,
+  settings: InMemorySettingsRepository = new InMemorySettingsRepository(),
+  confirmation: ScriptedConfirmation = new ScriptedConfirmation(true),
+): Harness {
+  const usageHistory = new InMemoryUsageHistoryRepository();
+  const locationSink = new RecordingLocationSink();
+  const presenter = new CarbometerPresenter({
     adapter,
-    buildService(),
-    repository,
-    new InMemoryUsageHistoryRepository(),
-    new StubMessages(),
-    METHODOLOGY_URL,
-    document,
-  );
+    service: buildService(),
+    conversations: repository,
+    usageHistory,
+    settings,
+    locationSink,
+    equivalences: new EquivalenceCatalog(),
+    confirmation,
+    messages: new StubMessages(),
+    methodologyUrl: METHODOLOGY_URL,
+    doc: document,
+  });
+  return { presenter, usageHistory, settings, locationSink, confirmation };
+}
+
+function buildPresenter(adapter: StubAdapter, repository: InMemoryConversationRepository): CarbometerPresenter {
+  return buildHarness(adapter, repository).presenter;
+}
+
+function openDashboard(): HTMLElement {
+  (document.querySelector('.carbometre-badge') as HTMLButtonElement).click();
+  return document.querySelector('.carbometre-dashboard') as HTMLElement;
 }
 
 beforeEach(() => {
@@ -219,6 +304,147 @@ describe('CarbometerPresenter', () => {
     expect(stored?.responseCount).toBe(1);
     expect(stored?.total.gCO2e).toBeGreaterThan(0);
     expect(stored?.total.confidence).toBe('guessed');
+  });
+
+  it('pushes the stored location to the grid provider on start, defaulting to "other" while unanswered', async () => {
+    const unanswered = buildHarness(new StubAdapter(document), new InMemoryConversationRepository());
+    unanswered.presenter.start();
+    await flushMicrotasks();
+    expect(unanswered.locationSink.received).toEqual(['other']);
+    unanswered.presenter.stop();
+
+    document.body.innerHTML = '';
+    const french = buildHarness(
+      new StubAdapter(document),
+      new InMemoryConversationRepository(),
+      new InMemorySettingsRepository({ ...DEFAULT_SETTINGS, userLocation: 'fr' }),
+    );
+    french.presenter.start();
+    await flushMicrotasks();
+    expect(french.locationSink.received).toEqual(['fr']);
+  });
+
+  it('changing the location from the dashboard asks for confirmation, then persists it and re-informs the grid provider', async () => {
+    const harness = buildHarness(new StubAdapter(document), new InMemoryConversationRepository());
+    harness.presenter.start();
+    await flushMicrotasks();
+    const panel = openDashboard();
+    await flushMicrotasks();
+
+    const locationSelect = panel.querySelectorAll<HTMLSelectElement>('.carbometre-dashboard-select')[1]!;
+    locationSelect.value = 'fr';
+    locationSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    await flushMicrotasks();
+
+    expect(harness.confirmation.requests).toHaveLength(1);
+    expect(harness.confirmation.requests[0]?.message).toBe('locationChangeWarning');
+    expect(harness.settings.settings.userLocation).toBe('fr');
+    expect(harness.locationSink.received.at(-1)).toBe('fr');
+  });
+
+  it('a declined location change applies nothing and puts the select back', async () => {
+    const harness = buildHarness(
+      new StubAdapter(document),
+      new InMemoryConversationRepository(),
+      new InMemorySettingsRepository({ ...DEFAULT_SETTINGS, userLocation: 'other' }),
+      new ScriptedConfirmation(false),
+    );
+    harness.presenter.start();
+    await flushMicrotasks();
+    const panel = openDashboard();
+    await flushMicrotasks();
+
+    const locationSelect = panel.querySelectorAll<HTMLSelectElement>('.carbometre-dashboard-select')[1]!;
+    locationSelect.value = 'fr';
+    locationSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    await flushMicrotasks();
+
+    expect(harness.confirmation.requests).toHaveLength(1);
+    expect(harness.settings.settings.userLocation).toBe('other');
+    expect(harness.locationSink.received).toEqual(['other']);
+    expect(locationSelect.value).toBe('other');
+  });
+
+  it('the open dashboard follows the badge while it is dragged', async () => {
+    const harness = buildHarness(new StubAdapter(document), new InMemoryConversationRepository());
+    harness.presenter.start();
+    await flushMicrotasks();
+    const badge = document.querySelector('.carbometre-badge') as HTMLButtonElement;
+    Object.defineProperty(badge, 'offsetWidth', { value: 80, configurable: true });
+    Object.defineProperty(badge, 'offsetHeight', { value: 20, configurable: true });
+    let badgeRect = { top: 100, bottom: 120, left: 50, right: 130, width: 80, height: 20 };
+    badge.getBoundingClientRect = () => ({ ...badgeRect, x: badgeRect.left, y: badgeRect.top, toJSON() {} }) as DOMRect;
+
+    const panel = openDashboard();
+    await flushMicrotasks();
+    panel.getBoundingClientRect = () =>
+      ({ top: 0, bottom: 100, left: 0, right: 200, width: 200, height: 100, x: 0, y: 0, toJSON() {} }) as DOMRect;
+    expect(panel.style.left).toBe('50px');
+
+    // Drag: pointerdown, then a move well past the click threshold. The
+    // badge repositions itself from the pointer delta; the stubbed rect
+    // stands in for the layout the real browser would report afterwards.
+    badge.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 1, button: 0, clientX: 60, clientY: 110, bubbles: true }));
+    badgeRect = { top: 300, bottom: 320, left: 250, right: 330, width: 80, height: 20 };
+    badge.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 260, clientY: 310, bubbles: true }));
+
+    expect(panel.style.left).toBe('250px');
+    expect(panel.style.top).toBe('328px');
+    badge.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 260, clientY: 310, bubbles: true }));
+  });
+
+  it('changing the equivalence persists it and re-renders the equivalent line in the new unit', async () => {
+    const harness = buildHarness(new StubAdapter(document), new InMemoryConversationRepository());
+    await harness.usageHistory.record(1000);
+    harness.presenter.start();
+    await flushMicrotasks();
+    const panel = openDashboard();
+    await flushMicrotasks();
+
+    const equivalentValue = (): string | null | undefined =>
+      panel.querySelectorAll('.carbometre-dashboard-value')[2]?.textContent;
+    expect(equivalentValue()).toBe('equivalentValueCarKm'); // StubMessages ignores substitutions
+
+    const equivalenceSelect = panel.querySelectorAll<HTMLSelectElement>('.carbometre-dashboard-select')[0]!;
+    equivalenceSelect.value = 'plane-km';
+    equivalenceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    await flushMicrotasks();
+
+    expect(harness.settings.settings.equivalenceId).toBe('plane-km');
+    expect(equivalentValue()).toBe('equivalentValuePlaneKm');
+  });
+
+  it('reset clears the cumulative total shown in the dashboard but leaves the conversation total alone', async () => {
+    const repository = new InMemoryConversationRepository();
+    const adapter = new StubAdapter(document);
+    const harness = buildHarness(adapter, repository);
+    harness.presenter.start();
+    await flushMicrotasks();
+    adapter.emit({ promptText: 'y'.repeat(200), responseText: 'x'.repeat(20000) });
+    await flushMicrotasks();
+
+    const panel = openDashboard();
+    await flushMicrotasks();
+    const values = (): string[] =>
+      Array.from(panel.querySelectorAll('.carbometre-dashboard-value')).map((el) => el.textContent ?? '');
+    const [conversationBefore, cumulativeBefore] = values();
+    expect(cumulativeBefore).not.toBe('0.00 gCO2e');
+    expect(cumulativeBefore).toBe(conversationBefore);
+
+    const reset = panel.querySelector('.carbometre-dashboard-reset') as HTMLButtonElement;
+    reset.click();
+    reset.click();
+    await flushMicrotasks();
+
+    const [conversationAfter, cumulativeAfter] = values();
+    expect(cumulativeAfter).toBe('0.00 gCO2e');
+    expect(conversationAfter).toBe(conversationBefore);
+    expect((await harness.usageHistory.cumulative()).gCO2e).toBe(0);
+
+    // The all-time figure under "details" survives the reset - that is its whole point.
+    (panel.querySelector('.carbometre-dashboard-details-toggle') as HTMLButtonElement).click();
+    const sinceInstall = panel.querySelector('.carbometre-dashboard-detail')?.textContent ?? '';
+    expect(sinceInstall).toContain(conversationBefore);
   });
 });
 

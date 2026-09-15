@@ -48,6 +48,7 @@ export class BadgeView {
     }
     if (this.dragState.moved) {
       this.applyPosition(this.dragState.originLeft + dx, this.dragState.originTop + dy);
+      this.onMove?.();
     }
   };
 
@@ -71,6 +72,8 @@ export class BadgeView {
     private readonly doc: Document,
     private readonly messages: Messages,
     private readonly onActivate: () => void,
+    /** Fired on every drag step, so an anchored panel (the dashboard) can follow. */
+    private readonly onMove?: () => void,
   ) {
     this.button = doc.createElement('button');
     this.button.type = 'button';
