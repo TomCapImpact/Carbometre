@@ -1,4 +1,5 @@
 import { ModelProfile, type ModelProfileProps, type ModelTier } from '../domain/ModelProfile.js';
+import { type CoefficientOverrides, isEditableCoefficient, isValidCoefficientValue } from './CoefficientOverrides.js';
 
 /**
  * Used when a site adapter detects a model id the catalog doesn't know
@@ -19,6 +20,7 @@ export interface FallbackHint {
  */
 export class ModelRegistry {
   private readonly profiles = new Map<string, ModelProfile>();
+  private overrides: CoefficientOverrides = {};
 
   register(profile: ModelProfile): this {
     this.profiles.set(profile.id, profile);
@@ -28,13 +30,13 @@ export class ModelRegistry {
   resolve(modelId: string, fallback?: FallbackHint): ModelProfile {
     const exact = this.profiles.get(modelId);
     if (exact) {
-      return exact;
+      return this.applyOverrides(exact);
     }
 
     if (fallback) {
       const fallbackProfile = this.profiles.get(`${fallback.providerId}-${fallback.tier}`);
       if (fallbackProfile) {
-        return fallbackProfile.with({ confidence: 'guessed' });
+        return this.applyOverrides(fallbackProfile).with({ confidence: 'guessed' });
       }
     }
 
@@ -43,6 +45,35 @@ export class ModelRegistry {
 
   has(modelId: string): boolean {
     return this.profiles.has(modelId);
+  }
+
+  /** Every registered profile with its catalogue (un-overridden) values, in registration order. */
+  defaults(): readonly ModelProfile[] {
+    return Array.from(this.profiles.values());
+  }
+
+  /**
+   * User-edited coefficients, applied on top of the catalogue at resolve
+   * time. Replaces the previous set entirely. Entries for unknown models
+   * or invalid values are ignored rather than rejected: they come from
+   * storage, and one bad number must not disable the whole registry.
+   */
+  setOverrides(overrides: CoefficientOverrides): void {
+    this.overrides = overrides;
+  }
+
+  private applyOverrides(profile: ModelProfile): ModelProfile {
+    const override = this.overrides[profile.id];
+    if (!override) {
+      return profile;
+    }
+    const valid: Record<string, number> = {};
+    for (const [key, value] of Object.entries(override)) {
+      if (isEditableCoefficient(key) && isValidCoefficientValue(key, value)) {
+        valid[key] = value;
+      }
+    }
+    return Object.keys(valid).length > 0 ? profile.with(valid) : profile;
   }
 
   static fromCatalog(entries: readonly ModelProfileProps[]): ModelRegistry {

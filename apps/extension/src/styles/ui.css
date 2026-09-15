@@ -304,3 +304,24 @@
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
+
+/* Dashboard footer: methodology link and the Options button, side by side. */
+.carbometre-dashboard-footer {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.carbometre-dashboard-options-button {
+  all: unset;
+  display: inline-block;
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.carbometre-dashboard-options-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

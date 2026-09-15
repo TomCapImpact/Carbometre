@@ -46,6 +46,7 @@ export interface DashboardActions {
    * puts the select back where it was.
    */
   onUserLocationRequested(location: UserLocation): void;
+  onOpenOptions(): void;
 }
 
 /**
@@ -208,7 +209,20 @@ export class DashboardView {
     link.rel = 'noopener';
     link.textContent = messages.get(MESSAGE_KEYS.dashboardMethodologyLink);
 
-    this.panel.append(this.closeButton, conversationRow, cumulativeRow, equivalentRow, locationRow, link);
+    // A button, not a link: the Options page is an extension page the
+    // content script cannot navigate to; the presenter asks the service
+    // worker to open it.
+    const optionsButton = doc.createElement('button');
+    optionsButton.type = 'button';
+    optionsButton.className = `${PANEL_CLASS}-options-button`;
+    optionsButton.textContent = messages.get(MESSAGE_KEYS.dashboardOptionsLink);
+    optionsButton.addEventListener('click', () => this.actions.onOpenOptions());
+
+    const footer = doc.createElement('div');
+    footer.className = `${PANEL_CLASS}-footer`;
+    footer.append(link, optionsButton);
+
+    this.panel.append(this.closeButton, conversationRow, cumulativeRow, equivalentRow, locationRow, footer);
     doc.body.append(this.panel);
   }
 

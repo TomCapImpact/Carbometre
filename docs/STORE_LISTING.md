@@ -42,6 +42,8 @@ one rule of the calculation for European-hosted models. It can be changed later 
 the dashboard.
 
 Works on claude.ai, chatgpt.com and chat.mistral.ai. Interface in French and English.
+An options page lets you switch the language, the electricity reference, edit every
+coefficient, export your totals as JSON or CSV, and erase everything.
 
 AN ESTIMATE, NOT A MEASUREMENT
 
@@ -63,8 +65,7 @@ PRIVACY
 - No network requests at all. The extension never contacts any server, including ours.
 - No analytics, no crash reporting, no remote configuration, no account.
 - Your messages are never stored. Only per-conversation totals, response counts, a
-  cumulative total, a per-day emissions ledger and your two settings (location answer,
-  chosen comparison) are saved — numbers, never content.
+  cumulative total, a per-day emissions ledger and your settings are saved — numbers, never content.
 - Everything stays in your browser's local storage, on your machine.
 
 The "storage" permission is used for exactly that and nothing else.
@@ -104,7 +105,8 @@ principalement ailleurs ? Elle ajuste une règle du calcul pour les modèles hé
 Europe. Modifiable ensuite depuis le tableau de bord.
 
 Fonctionne sur claude.ai, chatgpt.com et chat.mistral.ai. Interface en français et en
-anglais.
+anglais. Une page d'options permet de changer la langue, la référence électrique, de
+modifier chaque coefficient, d'exporter vos totaux en JSON ou CSV, et de tout effacer.
 
 UNE ESTIMATION, PAS UNE MESURE
 
@@ -128,8 +130,8 @@ CONFIDENTIALITÉ
 - Aucune analyse d'usage, aucun rapport d'erreur, aucune configuration distante, aucun
   compte.
 - Vos messages ne sont jamais stockés. Seuls sont conservés les totaux par conversation,
-  le nombre de réponses, un total cumulé, un relevé d'émissions par jour et vos deux
-  réglages (localisation, équivalent choisi) — des nombres, jamais du contenu.
+  le nombre de réponses, un total cumulé, un relevé d'émissions par jour et vos réglages
+  — des nombres, jamais du contenu.
 - Tout reste dans le stockage local de votre navigateur, sur votre machine.
 
 La permission « storage » sert exactement à cela, et à rien d'autre.
@@ -148,9 +150,9 @@ Chrome asks for these in the developer dashboard.
 ```
 Stores the running emissions total per conversation, the number of responses seen, a
 cumulative total with its reset date, an all-time total, a per-day emissions total, and
-two user settings
-(location answer, chosen comparison unit), so the badge can show a conversation's total
-again when the user returns to it. Numbers only; message content is never stored.
+the user's settings (language, location, electricity reference, comparison unit,
+coefficient overrides), so the badge can show a conversation's total again when the user
+returns to it. Numbers only; message content is never stored.
 Nothing is transmitted.
 ```
 

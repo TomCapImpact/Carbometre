@@ -1,4 +1,4 @@
-import type { CumulativeUsage, UsageHistoryRepository } from './UsageHistoryRepository.js';
+import type { CumulativeUsage, UsageHistoryRepository, UsageHistorySnapshot } from './UsageHistoryRepository.js';
 
 const LEDGER_KEY = 'carbometre:dailyUsage';
 const CUMULATIVE_KEY = 'carbometre:cumulative';
@@ -69,6 +69,15 @@ export class ChromeStorageUsageHistoryRepository implements UsageHistoryReposito
 
   async allTime(now: Date = new Date()): Promise<CumulativeUsage> {
     return this.toUsage(await this.readCounter(ALL_TIME_KEY), now);
+  }
+
+  async snapshot(now: Date = new Date()): Promise<UsageHistorySnapshot> {
+    const [daily, cumulative, allTime] = await Promise.all([this.readLedger(), this.cumulative(now), this.allTime(now)]);
+    return { daily: { ...daily }, cumulative, allTime };
+  }
+
+  async clear(): Promise<void> {
+    await this.storageArea.remove([LEDGER_KEY, CUMULATIVE_KEY, ALL_TIME_KEY]);
   }
 
   async reset(now: Date = new Date()): Promise<void> {

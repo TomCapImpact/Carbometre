@@ -23,7 +23,7 @@ function buildTotal(): Estimate {
 const METHODOLOGY_URL = 'https://example.invalid/methodology.html';
 
 function noopActions(): DashboardActions {
-  return { onReset: vi.fn(), onEquivalenceChange: vi.fn(), onUserLocationRequested: vi.fn() };
+  return { onReset: vi.fn(), onEquivalenceChange: vi.fn(), onUserLocationRequested: vi.fn(), onOpenOptions: vi.fn() };
 }
 
 function emptyData(overrides: Partial<DashboardData> = {}): DashboardData {
@@ -344,13 +344,13 @@ describe('DashboardView', () => {
     expect(dashboard.isOpen()).toBe(true);
   });
 
-  it('traps Tab focus between the close button and the methodology link', () => {
+  it('traps Tab focus between the close button and the last control', () => {
     const dashboard = build();
     dashboard.open(trigger, emptyData());
 
     const panel = document.querySelector('.carbometre-dashboard') as HTMLElement;
     const closeButton = panel.querySelector('.carbometre-dashboard-close') as HTMLElement;
-    const link = panel.querySelector('a') as HTMLElement;
+    const link = panel.querySelector('.carbometre-dashboard-options-button') as HTMLElement; // last focusable
 
     expect(document.activeElement).toBe(closeButton); // focused on open
 

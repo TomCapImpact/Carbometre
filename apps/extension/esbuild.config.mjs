@@ -1,13 +1,13 @@
 import { build } from 'esbuild';
 
 /**
- * Three bundles, one per execution context: the content script (badge +
- * dashboard on the chat sites), the install-time service worker, and the
- * onboarding page's script. Each is a self-contained IIFE; shared code
+ * Four bundles, one per execution context: the content script (badge +
+ * dashboard on the chat sites), the service worker, and the onboarding
+ * and Options pages' scripts. Each is a self-contained IIFE; shared code
  * (storage, i18n) is simply bundled into each - it is small.
  */
 await build({
-  entryPoints: ['src/content.ts', 'src/background.ts', 'src/onboarding.ts'],
+  entryPoints: ['src/content.ts', 'src/background.ts', 'src/onboarding.ts', 'src/options.ts'],
   outdir: 'dist',
   bundle: true,
   format: 'iife',

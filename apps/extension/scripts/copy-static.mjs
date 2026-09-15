@@ -9,6 +9,7 @@ cpSync(`${root}/_locales`, `${root}/dist/_locales`, { recursive: true });
 cpSync(`${root}/src/styles/ui.css`, `${root}/dist/ui.css`);
 cpSync(`${root}/methodology.html`, `${root}/dist/methodology.html`);
 cpSync(`${root}/onboarding.html`, `${root}/dist/onboarding.html`);
+cpSync(`${root}/options.html`, `${root}/dist/options.html`);
 cpSync(`${root}/icons`, `${root}/dist/icons`, { recursive: true });
 
-console.log('Copied manifest.json, _locales/, icons/, ui.css, methodology.html and onboarding.html to dist/');
+console.log('Copied manifest.json, _locales/, icons/, ui.css, methodology.html, onboarding.html and options.html to dist/');

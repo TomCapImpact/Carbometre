@@ -1,13 +1,12 @@
 import {
   type CarbometerService,
   Conversation,
-  DEFAULT_USER_LOCATION,
   type EquivalenceCatalog,
   type EquivalenceId,
   Estimate,
   type UserLocation,
-  type UserLocationSink,
 } from '@carbometre/core';
+import type { CalculationSettingsSink } from '../calculation/CalculationSettingsSink.js';
 import { observeUrlChanges } from '../adapters/observeUrlChanges.js';
 import type { RawResponse, SiteAdapter } from '../adapters/SiteAdapter.js';
 import { MESSAGE_KEYS } from '../i18n/messageKeys.js';
@@ -41,12 +40,14 @@ export interface PresenterDependencies {
   readonly conversations: ConversationRepository;
   readonly usageHistory: UsageHistoryRepository;
   readonly settings: SettingsRepository;
-  /** Told the user's location so future estimates use the matching grid rule. */
-  readonly locationSink: UserLocationSink;
+  /** Receives the settings that change future estimates (grid reference, location, coefficients). */
+  readonly calculation: CalculationSettingsSink;
   readonly equivalences: EquivalenceCatalog;
   readonly confirmation: Confirmation;
   readonly messages: Messages;
   readonly methodologyUrl: string;
+  /** Opens the Options page; the content script cannot do that itself. */
+  readonly openOptions: () => void;
   readonly doc?: Document;
 }
 
@@ -64,7 +65,7 @@ export class CarbometerPresenter {
   private readonly conversations: ConversationRepository;
   private readonly usageHistory: UsageHistoryRepository;
   private readonly settingsRepository: SettingsRepository;
-  private readonly locationSink: UserLocationSink;
+  private readonly calculation: CalculationSettingsSink;
   private readonly equivalences: EquivalenceCatalog;
   private readonly confirmation: Confirmation;
   private readonly messages: Messages;
@@ -75,6 +76,7 @@ export class CarbometerPresenter {
   private lastConversationId: string | null = null;
   private stopObservingResponses: Unsubscribe | null = null;
   private stopObservingUrl: Unsubscribe | null = null;
+  private stopObservingSettings: Unsubscribe | null = null;
 
   constructor(deps: PresenterDependencies) {
     this.adapter = deps.adapter;
@@ -82,7 +84,7 @@ export class CarbometerPresenter {
     this.conversations = deps.conversations;
     this.usageHistory = deps.usageHistory;
     this.settingsRepository = deps.settings;
-    this.locationSink = deps.locationSink;
+    this.calculation = deps.calculation;
     this.equivalences = deps.equivalences;
     this.confirmation = deps.confirmation;
     this.messages = deps.messages;
@@ -91,6 +93,7 @@ export class CarbometerPresenter {
       onReset: () => this.runDetached(this.resetCumulative()),
       onEquivalenceChange: (id) => this.runDetached(this.changeEquivalence(id)),
       onUserLocationRequested: (location) => this.runDetached(this.requestUserLocationChange(location)),
+      onOpenOptions: deps.openOptions,
     });
     this.badge = new BadgeView(
       doc,
@@ -107,6 +110,12 @@ export class CarbometerPresenter {
     this.stopObservingResponses = this.adapter.observeResponses((response) =>
       this.runDetached(this.handleResponse(response)),
     );
+    // Settings can change from the Options page while this tab is open;
+    // the calculation follows immediately, the dashboard re-renders if open.
+    this.stopObservingSettings = this.settingsRepository.onChange((settings) => {
+      this.applySettings(settings);
+      this.runDetached(this.refreshDashboard());
+    });
     this.runDetached(this.loadSettings());
     this.runDetached(this.handleConversationChange());
   }
@@ -114,6 +123,7 @@ export class CarbometerPresenter {
   stop(): void {
     this.stopObservingResponses?.();
     this.stopObservingUrl?.();
+    this.stopObservingSettings?.();
     this.badge.unmount();
     this.dashboard.destroy();
   }
@@ -136,7 +146,7 @@ export class CarbometerPresenter {
 
   private applySettings(settings: Settings): void {
     this.settings = settings;
-    this.locationSink.setUserLocation(settings.userLocation ?? DEFAULT_USER_LOCATION);
+    this.calculation.apply(settings);
   }
 
   private async saveSettings(settings: Settings): Promise<void> {

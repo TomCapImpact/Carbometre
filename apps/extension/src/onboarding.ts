@@ -1,6 +1,14 @@
 import { isUserLocation } from '@carbometre/core';
-import { ChromeMessages } from './i18n/ChromeMessages.js';
+import { resolveMessages } from './i18n/resolveMessages.js';
 import { OnboardingPage } from './ui/OnboardingPage.js';
 import { ChromeStorageSettingsRepository } from './storage/ChromeStorageSettingsRepository.js';
 
-new OnboardingPage(document, new ChromeMessages(), new ChromeStorageSettingsRepository(), isUserLocation).start();
+async function main(): Promise<void> {
+  const settings = new ChromeStorageSettingsRepository();
+  const { language } = await settings.load();
+  new OnboardingPage(document, resolveMessages(language), settings, isUserLocation).start();
+}
+
+main().catch((error: unknown) => {
+  console.error('[Carbomètre] onboarding failed to start', error);
+});

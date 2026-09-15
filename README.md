@@ -71,10 +71,29 @@ conversation, the cumulative total since you last reset it (with a "details" vie
 all-time and month-to-date totals), and that total expressed as kilometres by car or by
 plane.
 
+### Options page
+
+Reachable from the dashboard's "Options" button or from `chrome://extensions`:
+
+- **Interface language** — automatic (browser), French, or English. Applies on the next
+  page load: the views bake their strings in at construction.
+- **Location** — the onboarding answer, changeable behind the same confirmation.
+- **Electricity reference** — *actual server location* (default) or *French grid mix*,
+  the comparison mode that charges every model at 30 gCO2e/kWh (and says why that
+  understates US-hosted models).
+- **Coefficients** — every editable coefficient of every catalogue model, with the
+  default as placeholder. Empty means default; a value below the coefficient's floor is
+  refused with the model and column named. "Restore defaults" clears them all.
+- **Data** — export everything as JSON, conversations as CSV, the daily ledger as CSV
+  (ids, counts, totals; never message text); erase all data behind a confirmation.
+
+Calculation settings (location, reference, coefficients) reach open chat tabs
+immediately through `chrome.storage.onChanged`; past estimates are never recalculated.
+
 ### Development
 
 ```bash
-pnpm -r run test        # 189 tests, plus the FR/EN catalogue parity check
+pnpm -r run test        # 223 tests, plus the FR/EN catalogue parity check
 pnpm --filter @carbometre/extension run typecheck
 pnpm -r run build       # rebuild; then hit reload in chrome://extensions
 ```
@@ -108,10 +127,14 @@ CarbometerService                  facade: estimate(EstimateInput) -> Estimate
         └── EmissionModel          «interface»  estimate(usage, profile)
               └── TokenBasedEmissionModel
                     └── GridIntensityProvider   «interface»  intensityFor(profile)
-                          ├── UserLocationGridProvider  decorator: French mix for EU-hosted
-                          │     └── DatacenterGridProvider  models when the user is in France
-                          ├── DatacenterGridProvider   regionId -> regions.json
-                          └── FrenchGridProvider       fixed French mix (comparison mode)
+                          └── GridReferenceProvider    routes on the "electricity reference" setting
+                                ├── UserLocationGridProvider  French mix for EU-hosted models
+                                │     └── DatacenterGridProvider  when the user is in France
+                                └── FrenchGridProvider        fixed French mix (comparison mode)
+
+registry/
+  ModelRegistry        id -> ModelProfile, tier fallback, user coefficient overrides
+  CoefficientOverrides the editable subset, floors, validation
 
 domain/
   Estimate        immutable value object; plus() accumulates; carries low/high + confidence
@@ -133,6 +156,14 @@ state; the only place concrete implementations are chosen is the composition roo
 
 ```
 content.ts                composition root — wires everything, contains no logic
+onboarding.ts, options.ts composition roots for the two extension pages
+background.ts             service worker: opens onboarding on install, Options on request
+
+calculation/
+  CalculationSettingsSink  «interface» ── CalculationSettingsApplier  settings -> grid + registry
+
+export/
+  UsageExport             pure builders for the JSON / CSV downloads
 
 adapters/
   SiteAdapter             «abstract»  one class per supported site
@@ -155,9 +186,12 @@ ui/
                           follows the badge while it is dragged
   Confirmation            «interface» ── ModalConfirmation   the "are you sure?" modal
   OnboardingPage          drives onboarding.html (the install-time location question)
+  OptionsPage             drives options.html
+  FileSaver               «interface» ── AnchorFileSaver   hands a download to the user
 
-background.ts             service worker; opens onboarding.html once, on install
-onboarding.ts             second composition root, for the onboarding page
+i18n/
+  Messages                «interface» ── ChromeMessages (browser locale)
+                                      └─ CatalogMessages (forced language, bundled JSON)
 ```
 
 ---

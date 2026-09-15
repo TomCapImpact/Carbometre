@@ -19,6 +19,9 @@ class InMemorySettingsRepository implements SettingsRepository {
   async save(settings: Settings): Promise<void> {
     this.settings = settings;
   }
+  onChange(): () => void {
+    return () => undefined;
+  }
 }
 
 const MARKUP = `
@@ -50,7 +53,7 @@ describe('OnboardingPage', () => {
     (document.querySelector('[data-location="fr"]') as HTMLButtonElement).click();
     await flushMicrotasks();
 
-    expect(settings.settings).toEqual({ userLocation: 'fr', equivalenceId: 'plane-km' });
+    expect(settings.settings).toEqual({ ...DEFAULT_SETTINGS, userLocation: 'fr', equivalenceId: 'plane-km' });
     expect((document.querySelector('[data-step="question"]') as HTMLElement).hidden).toBe(true);
     expect((document.querySelector('[data-step="done"]') as HTMLElement).hidden).toBe(false);
   });

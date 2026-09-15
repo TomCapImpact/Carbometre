@@ -9,4 +9,8 @@ import type { Conversation } from '@carbometre/core';
 export interface ConversationRepository {
   load(id: string): Promise<Conversation | null>;
   save(conversation: Conversation): Promise<void>;
+  /** Every stored conversation, for export. Order is not significant. */
+  all(): Promise<readonly Conversation[]>;
+  /** Forgets every conversation. Used by the Options page's "erase all data". */
+  clear(): Promise<void>;
 }

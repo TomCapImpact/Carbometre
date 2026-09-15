@@ -4,10 +4,17 @@ import { ChromeStorageUsageHistoryRepository } from '../../src/storage/ChromeSto
 function fakeStorageArea(): chrome.storage.StorageArea {
   const data = new Map<string, unknown>();
   return {
-    get: vi.fn(async (key: string) => ({ [key]: data.get(key) })),
+    get: vi.fn(async (key: string | null) =>
+      key === null ? Object.fromEntries(data) : { [key]: data.get(key) },
+    ),
     set: vi.fn(async (items: Record<string, unknown>) => {
       for (const [key, value] of Object.entries(items)) {
         data.set(key, value);
+      }
+    }),
+    remove: vi.fn(async (keys: string | string[]) => {
+      for (const key of Array.isArray(keys) ? keys : [keys]) {
+        data.delete(key);
       }
     }),
   } as unknown as chrome.storage.StorageArea;
@@ -158,6 +165,27 @@ describe('ChromeStorageUsageHistoryRepository', () => {
 
       await repo.record(1, new Date('2026-09-15T13:00:00Z'));
       expect((await repo.cumulative()).gCO2e).toBeCloseTo(1, 10);
+    });
+  });
+
+  describe('snapshot() and clear()', () => {
+    it('snapshot returns the ledger and both counters; clear forgets all three', async () => {
+      const repo = new ChromeStorageUsageHistoryRepository(fakeStorageArea());
+      await repo.record(1, new Date('2026-09-14T10:00:00Z'));
+      await repo.record(2, new Date('2026-09-15T10:00:00Z'));
+
+      const snapshot = await repo.snapshot();
+      expect(snapshot.daily).toEqual({ '2026-09-14': 1, '2026-09-15': 2 });
+      expect(snapshot.cumulative.gCO2e).toBeCloseTo(3, 10);
+      expect(snapshot.allTime.gCO2e).toBeCloseTo(3, 10);
+
+      await repo.clear();
+      const now = new Date('2026-09-16T00:00:00Z');
+      expect(await repo.snapshot(now)).toEqual({
+        daily: {},
+        cumulative: { gCO2e: 0, since: now },
+        allTime: { gCO2e: 0, since: now },
+      });
     });
   });
 });

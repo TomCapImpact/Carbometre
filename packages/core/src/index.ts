@@ -29,8 +29,19 @@ export type { GridIntensityProvider } from './grid/GridIntensityProvider.js';
 export { DatacenterGridProvider, type RegionEntry, type RegionTable } from './grid/DatacenterGridProvider.js';
 export { FrenchGridProvider, FRENCH_GRID_INTENSITY } from './grid/FrenchGridProvider.js';
 export { isEuropeanRegion, UserLocationGridProvider } from './grid/UserLocationGridProvider.js';
+export { DEFAULT_GRID_REFERENCE, GRID_REFERENCES, type GridReference, isGridReference } from './grid/GridReference.js';
+export { GridReferenceProvider } from './grid/GridReferenceProvider.js';
 
 export { ModelRegistry, type FallbackHint } from './registry/ModelRegistry.js';
+export {
+  COEFFICIENT_MINIMUMS,
+  type CoefficientOverride,
+  type CoefficientOverrides,
+  EDITABLE_COEFFICIENTS,
+  type EditableCoefficient,
+  isEditableCoefficient,
+  isValidCoefficientValue,
+} from './registry/CoefficientOverrides.js';
 export { default as modelCatalog } from './registry/models.json' with { type: 'json' };
 
 export { AVERAGE_CAR_GCO2E_PER_KM, gCO2eToCarKm } from './equivalence/CarEquivalence.js';

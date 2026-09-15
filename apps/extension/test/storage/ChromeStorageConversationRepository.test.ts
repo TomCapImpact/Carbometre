@@ -5,10 +5,17 @@ import { ChromeStorageConversationRepository } from '../../src/storage/ChromeSto
 function fakeStorageArea(): chrome.storage.StorageArea {
   const data = new Map<string, unknown>();
   return {
-    get: vi.fn(async (key: string) => ({ [key]: data.get(key) })),
+    get: vi.fn(async (key: string | null) =>
+      key === null ? Object.fromEntries(data) : { [key]: data.get(key) },
+    ),
     set: vi.fn(async (items: Record<string, unknown>) => {
       for (const [key, value] of Object.entries(items)) {
         data.set(key, value);
+      }
+    }),
+    remove: vi.fn(async (keys: string | string[]) => {
+      for (const key of Array.isArray(keys) ? keys : [keys]) {
+        data.delete(key);
       }
     }),
   } as unknown as chrome.storage.StorageArea;
@@ -92,5 +99,28 @@ describe('ChromeStorageConversationRepository', () => {
     for (const value of Object.values(record)) {
       expect(['number', 'string']).toContain(typeof value);
     }
+  });
+
+  it('all() lists every stored conversation and ignores unrelated keys', async () => {
+    const area = fakeStorageArea();
+    await area.set({ 'carbometre:settings': { language: 'fr' } });
+    const repository = new ChromeStorageConversationRepository(area);
+    await repository.save(new Conversation('a', 'claude'));
+    await repository.save(new Conversation('b', 'gpt'));
+
+    const ids = (await repository.all()).map((c) => c.id).sort();
+    expect(ids).toEqual(['a', 'b']);
+  });
+
+  it('clear() removes only conversations, leaving other keys alone', async () => {
+    const area = fakeStorageArea();
+    await area.set({ 'carbometre:settings': { language: 'fr' } });
+    const repository = new ChromeStorageConversationRepository(area);
+    await repository.save(new Conversation('a', 'claude'));
+
+    await repository.clear();
+    expect(await repository.all()).toEqual([]);
+    expect(((await area.get(null)) as Record<string, unknown>)['carbometre:settings']).toEqual({ language: 'fr' });
+    await repository.clear(); // nothing to remove: must not throw
   });
 });
