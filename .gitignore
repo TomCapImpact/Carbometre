@@ -8,3 +8,4 @@ coverage/
 # Chrome's "Pack extension" output (signing key + packed .crx) - never commit a private key.
 *.pem
 *.crx
+release/

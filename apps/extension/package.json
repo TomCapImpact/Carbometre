@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node scripts/check-i18n-parity.mjs && vitest run",
     "test:watch": "vitest",
-    "check:i18n": "node scripts/check-i18n-parity.mjs"
+    "check:i18n": "node scripts/check-i18n-parity.mjs",
+    "package": "node scripts/package.mjs"
   },
   "dependencies": {
     "@carbometre/core": "workspace:*"
