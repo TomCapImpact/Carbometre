@@ -167,25 +167,4 @@ describe('ChromeStorageUsageHistoryRepository', () => {
       expect((await repo.cumulative()).gCO2e).toBeCloseTo(1, 10);
     });
   });
-
-  describe('snapshot() and clear()', () => {
-    it('snapshot returns the ledger and both counters; clear forgets all three', async () => {
-      const repo = new ChromeStorageUsageHistoryRepository(fakeStorageArea());
-      await repo.record(1, new Date('2026-09-14T10:00:00Z'));
-      await repo.record(2, new Date('2026-09-15T10:00:00Z'));
-
-      const snapshot = await repo.snapshot();
-      expect(snapshot.daily).toEqual({ '2026-09-14': 1, '2026-09-15': 2 });
-      expect(snapshot.cumulative.gCO2e).toBeCloseTo(3, 10);
-      expect(snapshot.allTime.gCO2e).toBeCloseTo(3, 10);
-
-      await repo.clear();
-      const now = new Date('2026-09-16T00:00:00Z');
-      expect(await repo.snapshot(now)).toEqual({
-        daily: {},
-        cumulative: { gCO2e: 0, since: now },
-        allTime: { gCO2e: 0, since: now },
-      });
-    });
-  });
 });

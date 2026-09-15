@@ -33,21 +33,6 @@ export class ChromeStorageConversationRepository implements ConversationReposito
     await this.storageArea.set({ [this.keyFor(conversation.id)]: this.toRecord(conversation) });
   }
 
-  async all(): Promise<readonly Conversation[]> {
-    const everything = (await this.storageArea.get(null)) as Record<string, unknown>;
-    return Object.entries(everything)
-      .filter(([key]) => key.startsWith(STORAGE_KEY_PREFIX))
-      .map(([, record]) => this.toConversation(record as StoredConversationRecord));
-  }
-
-  async clear(): Promise<void> {
-    const everything = (await this.storageArea.get(null)) as Record<string, unknown>;
-    const keys = Object.keys(everything).filter((key) => key.startsWith(STORAGE_KEY_PREFIX));
-    if (keys.length > 0) {
-      await this.storageArea.remove(keys);
-    }
-  }
-
   private keyFor(id: string): string {
     return `${STORAGE_KEY_PREFIX}${id}`;
   }

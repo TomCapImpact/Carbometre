@@ -19,9 +19,6 @@ class InMemorySettingsRepository implements SettingsRepository {
   async save(settings: Settings): Promise<void> {
     this.settings = settings;
   }
-  onChange(): () => void {
-    return () => undefined;
-  }
 }
 
 const MARKUP = `

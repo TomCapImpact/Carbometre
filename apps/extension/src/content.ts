@@ -3,8 +3,6 @@ import {
   DatacenterGridProvider,
   EmissionModelRegistry,
   EquivalenceCatalog,
-  FrenchGridProvider,
-  GridReferenceProvider,
   HeuristicTokenizer,
   ModelRegistry,
   type ModelProfileProps,
@@ -41,14 +39,13 @@ async function main(): Promise<void> {
   const settingsRepository = new ChromeStorageSettingsRepository();
   const settings = await settingsRepository.load();
 
-  const gridProvider = new GridReferenceProvider(
-    new UserLocationGridProvider(new DatacenterGridProvider()),
-    new FrenchGridProvider(),
-  );
-  const models = ModelRegistry.fromCatalog(modelCatalog as unknown as ModelProfileProps[]);
+  // The user's location wraps the datacentre grid: French mix for
+  // European-hosted models when the user is in France, datacentre grid
+  // otherwise. The presenter updates it as the setting loads and changes.
+  const gridProvider = new UserLocationGridProvider(new DatacenterGridProvider());
   const service = new CarbometerService(
     new HeuristicTokenizer(),
-    models,
+    ModelRegistry.fromCatalog(modelCatalog as unknown as ModelProfileProps[]),
     new EmissionModelRegistry().register('token-based', new TokenBasedEmissionModel(gridProvider)),
   );
 
@@ -58,7 +55,7 @@ async function main(): Promise<void> {
     conversations: new ChromeStorageConversationRepository(),
     usageHistory: new ChromeStorageUsageHistoryRepository(),
     settings: settingsRepository,
-    calculation: new CalculationSettingsApplier(gridProvider, models),
+    calculation: new CalculationSettingsApplier(gridProvider),
     equivalences: new EquivalenceCatalog(),
     confirmation: new ModalConfirmation(document),
     messages: resolveMessages(settings.language),

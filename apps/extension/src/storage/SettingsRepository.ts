@@ -1,6 +1,5 @@
-import type { CoefficientOverrides, EquivalenceId, GridReference, UserLocation } from '@carbometre/core';
+import type { EquivalenceId, UserLocation } from '@carbometre/core';
 import type { UiLanguage } from '../i18n/UiLanguage.js';
-import type { Unsubscribe } from '../types.js';
 
 /**
  * The user's own choices. `userLocation` is null until the onboarding
@@ -12,17 +11,9 @@ export interface Settings {
   readonly userLocation: UserLocation | null;
   readonly equivalenceId: EquivalenceId;
   readonly language: UiLanguage;
-  readonly gridReference: GridReference;
-  readonly coefficientOverrides: CoefficientOverrides;
 }
 
 export interface SettingsRepository {
   load(): Promise<Settings>;
   save(settings: Settings): Promise<void>;
-  /**
-   * Fires with the new settings whenever they change - including from
-   * another page of the extension (the Options page saving while a chat
-   * tab is open). Not fired for the caller's own save().
-   */
-  onChange(listener: (settings: Settings) => void): Unsubscribe;
 }

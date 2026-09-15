@@ -15,12 +15,7 @@ import type { Messages } from '../../src/i18n/Messages.js';
 import type { ConversationRepository } from '../../src/storage/ConversationRepository.js';
 import { DEFAULT_SETTINGS } from '../../src/storage/ChromeStorageSettingsRepository.js';
 import type { Settings, SettingsRepository } from '../../src/storage/SettingsRepository.js';
-import type {
-  CumulativeUsage,
-  UsageHistoryRepository,
-  UsageHistorySnapshot,
-} from '../../src/storage/UsageHistoryRepository.js';
-import type { Unsubscribe } from '../../src/types.js';
+import type { CumulativeUsage, UsageHistoryRepository } from '../../src/storage/UsageHistoryRepository.js';
 import { CarbometerPresenter } from '../../src/ui/CarbometerPresenter.js';
 import type { Confirmation, ConfirmationRequest } from '../../src/ui/Confirmation.js';
 import type { Conversation, FallbackHint } from '@carbometre/core';
@@ -87,14 +82,6 @@ class InMemoryConversationRepository implements ConversationRepository {
   async save(conversation: Conversation): Promise<void> {
     this.store.set(conversation.id, conversation);
   }
-
-  async all(): Promise<readonly Conversation[]> {
-    return Array.from(this.store.values());
-  }
-
-  async clear(): Promise<void> {
-    this.store.clear();
-  }
 }
 
 class StubMessages implements Messages {
@@ -129,15 +116,6 @@ class InMemoryUsageHistoryRepository implements UsageHistoryRepository {
     return { gCO2e: this.lifetime, since: new Date('2026-08-01T00:00:00Z') };
   }
 
-  async snapshot(): Promise<UsageHistorySnapshot> {
-    return { daily: {}, cumulative: await this.cumulative(), allTime: await this.allTime() };
-  }
-
-  async clear(): Promise<void> {
-    this.total = 0;
-    this.lifetime = 0;
-  }
-
   async reset(now: Date = new Date('2026-09-15T00:00:00Z')): Promise<void> {
     this.total = 0;
     this.since = now;
@@ -145,8 +123,6 @@ class InMemoryUsageHistoryRepository implements UsageHistoryRepository {
 }
 
 class InMemorySettingsRepository implements SettingsRepository {
-  private readonly listeners = new Set<(settings: Settings) => void>();
-
   constructor(public settings: Settings = DEFAULT_SETTINGS) {}
 
   async load(): Promise<Settings> {
@@ -155,19 +131,6 @@ class InMemorySettingsRepository implements SettingsRepository {
 
   async save(settings: Settings): Promise<void> {
     this.settings = settings;
-  }
-
-  onChange(listener: (settings: Settings) => void): Unsubscribe {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
-  }
-
-  /** Simulates another page (the Options page) writing the same key. */
-  emitExternalChange(settings: Settings): void {
-    this.settings = settings;
-    for (const listener of this.listeners) {
-      listener(settings);
-    }
   }
 }
 
@@ -349,28 +312,12 @@ describe('CarbometerPresenter', () => {
     const french = buildHarness(
       new StubAdapter(document),
       new InMemoryConversationRepository(),
-      new InMemorySettingsRepository({ ...DEFAULT_SETTINGS, userLocation: 'fr', gridReference: 'french-mix' }),
+      new InMemorySettingsRepository({ ...DEFAULT_SETTINGS, userLocation: 'fr' }),
     );
     french.presenter.start();
     await flushMicrotasks();
     expect(french.calculation.received).toHaveLength(1);
     expect(french.calculation.received[0]?.userLocation).toBe('fr');
-    expect(french.calculation.received[0]?.gridReference).toBe('french-mix');
-  });
-
-  it('applies settings changed from elsewhere (the Options page) without a reload, and stops on stop()', async () => {
-    const harness = buildHarness(new StubAdapter(document), new InMemoryConversationRepository());
-    harness.presenter.start();
-    await flushMicrotasks();
-    const before = harness.calculation.received.length;
-
-    harness.settings.emitExternalChange({ ...DEFAULT_SETTINGS, coefficientOverrides: { 'claude-frontier': { pue: 1.2 } } });
-    expect(harness.calculation.received).toHaveLength(before + 1);
-    expect(harness.calculation.received.at(-1)?.coefficientOverrides['claude-frontier']?.pue).toBe(1.2);
-
-    harness.presenter.stop();
-    harness.settings.emitExternalChange(DEFAULT_SETTINGS);
-    expect(harness.calculation.received).toHaveLength(before + 1);
   });
 
   it('the dashboard "Options" button asks the host to open the Options page', async () => {

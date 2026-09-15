@@ -1,10 +1,5 @@
-import { ModelRegistry, type ModelProfileProps, modelCatalog } from '@carbometre/core';
 import { resolveMessages } from './i18n/resolveMessages.js';
-import { ChromeStorageConversationRepository } from './storage/ChromeStorageConversationRepository.js';
 import { ChromeStorageSettingsRepository } from './storage/ChromeStorageSettingsRepository.js';
-import { ChromeStorageUsageHistoryRepository } from './storage/ChromeStorageUsageHistoryRepository.js';
-import { AnchorFileSaver } from './ui/FileSaver.js';
-import { ModalConfirmation } from './ui/ModalConfirmation.js';
 import { OptionsPage } from './ui/OptionsPage.js';
 
 async function main(): Promise<void> {
@@ -14,12 +9,6 @@ async function main(): Promise<void> {
     doc: document,
     messages: resolveMessages(language),
     settings,
-    conversations: new ChromeStorageConversationRepository(),
-    usageHistory: new ChromeStorageUsageHistoryRepository(),
-    models: ModelRegistry.fromCatalog(modelCatalog as unknown as ModelProfileProps[]),
-    confirmation: new ModalConfirmation(document),
-    files: new AnchorFileSaver(document),
-    version: chrome.runtime.getManifest().version,
     methodologyUrl: chrome.runtime.getURL('methodology.html'),
   }).start();
 }

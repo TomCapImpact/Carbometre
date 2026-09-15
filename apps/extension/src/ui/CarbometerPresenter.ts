@@ -40,7 +40,7 @@ export interface PresenterDependencies {
   readonly conversations: ConversationRepository;
   readonly usageHistory: UsageHistoryRepository;
   readonly settings: SettingsRepository;
-  /** Receives the settings that change future estimates (grid reference, location, coefficients). */
+  /** Receives the settings that change future estimates (today: the user's location). */
   readonly calculation: CalculationSettingsSink;
   readonly equivalences: EquivalenceCatalog;
   readonly confirmation: Confirmation;
@@ -76,7 +76,6 @@ export class CarbometerPresenter {
   private lastConversationId: string | null = null;
   private stopObservingResponses: Unsubscribe | null = null;
   private stopObservingUrl: Unsubscribe | null = null;
-  private stopObservingSettings: Unsubscribe | null = null;
 
   constructor(deps: PresenterDependencies) {
     this.adapter = deps.adapter;
@@ -110,12 +109,6 @@ export class CarbometerPresenter {
     this.stopObservingResponses = this.adapter.observeResponses((response) =>
       this.runDetached(this.handleResponse(response)),
     );
-    // Settings can change from the Options page while this tab is open;
-    // the calculation follows immediately, the dashboard re-renders if open.
-    this.stopObservingSettings = this.settingsRepository.onChange((settings) => {
-      this.applySettings(settings);
-      this.runDetached(this.refreshDashboard());
-    });
     this.runDetached(this.loadSettings());
     this.runDetached(this.handleConversationChange());
   }
@@ -123,7 +116,6 @@ export class CarbometerPresenter {
   stop(): void {
     this.stopObservingResponses?.();
     this.stopObservingUrl?.();
-    this.stopObservingSettings?.();
     this.badge.unmount();
     this.dashboard.destroy();
   }

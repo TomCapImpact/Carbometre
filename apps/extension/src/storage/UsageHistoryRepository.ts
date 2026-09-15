@@ -20,19 +20,8 @@ export interface CumulativeUsage {
  *    for "this month" and the export feature of the Options page. Reset
  *    does not touch the ledger either.
  */
-/** Everything the history holds, for export. */
-export interface UsageHistorySnapshot {
-  /** gCO2e per UTC calendar day, keyed YYYY-MM-DD. */
-  readonly daily: Readonly<Record<string, number>>;
-  readonly cumulative: CumulativeUsage;
-  readonly allTime: CumulativeUsage;
-}
-
 export interface UsageHistoryRepository {
   record(gCO2e: number, on?: Date): Promise<void>;
-  snapshot(now?: Date): Promise<UsageHistorySnapshot>;
-  /** Forgets everything: ledger and both counters. */
-  clear(): Promise<void>;
   totalForLastDays(days: number, now?: Date): Promise<number>;
   /** Sum of the daily ledger from the calendar day containing `start` (UTC), inclusive. */
   totalSince(start: Date): Promise<number>;

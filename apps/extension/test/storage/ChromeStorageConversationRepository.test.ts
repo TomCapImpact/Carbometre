@@ -100,27 +100,4 @@ describe('ChromeStorageConversationRepository', () => {
       expect(['number', 'string']).toContain(typeof value);
     }
   });
-
-  it('all() lists every stored conversation and ignores unrelated keys', async () => {
-    const area = fakeStorageArea();
-    await area.set({ 'carbometre:settings': { language: 'fr' } });
-    const repository = new ChromeStorageConversationRepository(area);
-    await repository.save(new Conversation('a', 'claude'));
-    await repository.save(new Conversation('b', 'gpt'));
-
-    const ids = (await repository.all()).map((c) => c.id).sort();
-    expect(ids).toEqual(['a', 'b']);
-  });
-
-  it('clear() removes only conversations, leaving other keys alone', async () => {
-    const area = fakeStorageArea();
-    await area.set({ 'carbometre:settings': { language: 'fr' } });
-    const repository = new ChromeStorageConversationRepository(area);
-    await repository.save(new Conversation('a', 'claude'));
-
-    await repository.clear();
-    expect(await repository.all()).toEqual([]);
-    expect(((await area.get(null)) as Record<string, unknown>)['carbometre:settings']).toEqual({ language: 'fr' });
-    await repository.clear(); // nothing to remove: must not throw
-  });
 });

@@ -15,9 +15,14 @@ describe('CatalogMessages', () => {
   it('substitutes $NAME$ placeholders by their $n index, like chrome.i18n', () => {
     const messages = new CatalogMessages(fr);
     expect(messages.get('dashboardSinceLabel', ['15 sept. 2026'])).toBe('Depuis le 15 sept. 2026');
-    expect(messages.get('optionsInvalidCoefficient', ['PUE', 'Claude', '1'])).toBe(
-      'Valeur invalide pour PUE (Claude) : nombre attendu, au minimum 1.',
-    );
+
+    const several = new CatalogMessages({
+      pair: {
+        message: '$FIRST$ then $SECOND$, and $FIRST$ again',
+        placeholders: { first: { content: '$1' }, second: { content: '$2' } },
+      },
+    });
+    expect(several.get('pair', ['a', 'b'])).toBe('a then b, and a again');
   });
 
   it('leaves a placeholder empty when no substitution is given rather than printing $AMOUNT$', () => {

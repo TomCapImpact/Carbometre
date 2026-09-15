@@ -132,12 +132,6 @@
   "locationChangeCancelLabel": {
     "message": "Annuler"
   },
-  "confirmLabel": {
-    "message": "Confirmer"
-  },
-  "cancelLabel": {
-    "message": "Annuler"
-  },
   "dashboardOptionsLink": {
     "message": "Options"
   },
@@ -164,103 +158,6 @@
   },
   "optionsLanguageNote": {
     "message": "Appliqué au prochain chargement des pages claude.ai, chatgpt.com et chat.mistral.ai."
-  },
-  "optionsLocationLegend": {
-    "message": "Localisation"
-  },
-  "optionsLocationNote": {
-    "message": "Si vous êtes principalement en France, les modèles hébergés en Europe sont comptés avec le mix électrique français (30 gCO2e/kWh). Les modèles hébergés aux États-Unis gardent le facteur de leur centre de données."
-  },
-  "optionsGridLegend": {
-    "message": "Référence électrique"
-  },
-  "optionsGridDatacenter": {
-    "message": "Localisation réelle des serveurs (défaut)"
-  },
-  "optionsGridFrench": {
-    "message": "Mix français"
-  },
-  "optionsGridNote": {
-    "message": "Le mix français applique 30 gCO2e/kWh à tous les modèles, y compris ceux hébergés aux États-Unis. Utile pour comparer, mais il sous-estime leur empreinte réelle d'environ 12×."
-  },
-  "optionsCoefficientsLegend": {
-    "message": "Coefficients"
-  },
-  "optionsCoefficientsNote": {
-    "message": "Modifiez un coefficient pour tester une hypothèse. Les réponses déjà comptées ne sont pas recalculées. Les valeurs par défaut et leurs sources sont documentées dans la méthodologie."
-  },
-  "optionsColModel": {
-    "message": "Modèle"
-  },
-  "optionsColETokenWh": {
-    "message": "Énergie par token (Wh)"
-  },
-  "optionsColPue": {
-    "message": "PUE"
-  },
-  "optionsColEmbodied": {
-    "message": "Empreinte matérielle par token (g)"
-  },
-  "optionsColThinking": {
-    "message": "Multiplicateur de raisonnement caché"
-  },
-  "optionsColUncertainty": {
-    "message": "Facteur d'incertitude"
-  },
-  "optionsDefaultValue": {
-    "message": "Valeur par défaut : $VALUE$",
-    "placeholders": {
-      "value": {
-        "content": "$1"
-      }
-    }
-  },
-  "optionsSaveCoefficients": {
-    "message": "Enregistrer les coefficients"
-  },
-  "optionsRestoreDefaults": {
-    "message": "Rétablir les valeurs par défaut"
-  },
-  "optionsInvalidCoefficient": {
-    "message": "Valeur invalide pour $FIELD$ ($MODEL$) : nombre attendu, au minimum $MIN$.",
-    "placeholders": {
-      "field": {
-        "content": "$1"
-      },
-      "model": {
-        "content": "$2"
-      },
-      "min": {
-        "content": "$3"
-      }
-    }
-  },
-  "optionsDataLegend": {
-    "message": "Données"
-  },
-  "optionsExportJson": {
-    "message": "Exporter tout (JSON)"
-  },
-  "optionsExportConversationsCsv": {
-    "message": "Exporter les conversations (CSV)"
-  },
-  "optionsExportDailyCsv": {
-    "message": "Exporter le relevé quotidien (CSV)"
-  },
-  "optionsExportNote": {
-    "message": "Identifiants, compteurs et totaux uniquement — jamais le contenu des messages."
-  },
-  "optionsEraseData": {
-    "message": "Effacer toutes les données"
-  },
-  "optionsEraseDataTitle": {
-    "message": "Effacer toutes les données ?"
-  },
-  "optionsEraseDataWarning": {
-    "message": "Les totaux de chaque conversation, le relevé quotidien et les compteurs seront supprimés. Vos réglages sont conservés. Cette action est définitive."
-  },
-  "optionsEraseDone": {
-    "message": "Données effacées."
   },
   "optionsMethodologyLink": {
     "message": "Consulter la méthodologie"

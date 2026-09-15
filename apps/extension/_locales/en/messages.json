@@ -132,12 +132,6 @@
   "locationChangeCancelLabel": {
     "message": "Cancel"
   },
-  "confirmLabel": {
-    "message": "Confirm"
-  },
-  "cancelLabel": {
-    "message": "Cancel"
-  },
   "dashboardOptionsLink": {
     "message": "Options"
   },
@@ -164,103 +158,6 @@
   },
   "optionsLanguageNote": {
     "message": "Applies the next time claude.ai, chatgpt.com or chat.mistral.ai pages are loaded."
-  },
-  "optionsLocationLegend": {
-    "message": "Location"
-  },
-  "optionsLocationNote": {
-    "message": "If you are mainly in France, models hosted in Europe are counted at the French grid mix (30 gCO2e/kWh). US-hosted models keep their own datacentre factor."
-  },
-  "optionsGridLegend": {
-    "message": "Electricity reference"
-  },
-  "optionsGridDatacenter": {
-    "message": "Actual server location (default)"
-  },
-  "optionsGridFrench": {
-    "message": "French grid mix"
-  },
-  "optionsGridNote": {
-    "message": "The French mix charges every model at 30 gCO2e/kWh, US-hosted ones included. Useful for comparison, but it understates their real footprint by about 12×."
-  },
-  "optionsCoefficientsLegend": {
-    "message": "Coefficients"
-  },
-  "optionsCoefficientsNote": {
-    "message": "Change a coefficient to test an assumption. Responses already counted are not recalculated. Default values and their sources are documented in the methodology."
-  },
-  "optionsColModel": {
-    "message": "Model"
-  },
-  "optionsColETokenWh": {
-    "message": "Energy per token (Wh)"
-  },
-  "optionsColPue": {
-    "message": "PUE"
-  },
-  "optionsColEmbodied": {
-    "message": "Embodied footprint per token (g)"
-  },
-  "optionsColThinking": {
-    "message": "Hidden reasoning multiplier"
-  },
-  "optionsColUncertainty": {
-    "message": "Uncertainty factor"
-  },
-  "optionsDefaultValue": {
-    "message": "Default: $VALUE$",
-    "placeholders": {
-      "value": {
-        "content": "$1"
-      }
-    }
-  },
-  "optionsSaveCoefficients": {
-    "message": "Save coefficients"
-  },
-  "optionsRestoreDefaults": {
-    "message": "Restore defaults"
-  },
-  "optionsInvalidCoefficient": {
-    "message": "Invalid value for $FIELD$ ($MODEL$): a number of at least $MIN$ is expected.",
-    "placeholders": {
-      "field": {
-        "content": "$1"
-      },
-      "model": {
-        "content": "$2"
-      },
-      "min": {
-        "content": "$3"
-      }
-    }
-  },
-  "optionsDataLegend": {
-    "message": "Data"
-  },
-  "optionsExportJson": {
-    "message": "Export everything (JSON)"
-  },
-  "optionsExportConversationsCsv": {
-    "message": "Export conversations (CSV)"
-  },
-  "optionsExportDailyCsv": {
-    "message": "Export the daily ledger (CSV)"
-  },
-  "optionsExportNote": {
-    "message": "Identifiers, counts and totals only — never message content."
-  },
-  "optionsEraseData": {
-    "message": "Erase all data"
-  },
-  "optionsEraseDataTitle": {
-    "message": "Erase all data?"
-  },
-  "optionsEraseDataWarning": {
-    "message": "Every conversation total, the daily ledger and the counters will be deleted. Your settings are kept. This cannot be undone."
-  },
-  "optionsEraseDone": {
-    "message": "Data erased."
   },
   "optionsMethodologyLink": {
     "message": "Read the methodology"

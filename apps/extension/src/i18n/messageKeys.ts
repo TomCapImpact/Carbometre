@@ -1,4 +1,4 @@
-import type { EditableCoefficient, EquivalenceId } from '@carbometre/core';
+import type { EquivalenceId } from '@carbometre/core';
 
 /** Keys into _locales/{en,fr}/messages.json - one constant so a typo is a compile error, not a silent blank string. */
 export const MESSAGE_KEYS = {
@@ -29,8 +29,6 @@ export const MESSAGE_KEYS = {
   locationChangeCancelLabel: 'locationChangeCancelLabel',
   dashboardMethodologyLink: 'dashboardMethodologyLink',
   dashboardOptionsLink: 'dashboardOptionsLink',
-  confirmLabel: 'confirmLabel',
-  cancelLabel: 'cancelLabel',
   onboardingTitle: 'onboardingTitle',
   onboardingQuestion: 'onboardingQuestion',
   onboardingExplanation: 'onboardingExplanation',
@@ -43,44 +41,9 @@ export const MESSAGE_KEYS = {
   optionsLanguageFr: 'optionsLanguageFr',
   optionsLanguageEn: 'optionsLanguageEn',
   optionsLanguageNote: 'optionsLanguageNote',
-  optionsLocationLegend: 'optionsLocationLegend',
-  optionsLocationNote: 'optionsLocationNote',
-  optionsGridLegend: 'optionsGridLegend',
-  optionsGridDatacenter: 'optionsGridDatacenter',
-  optionsGridFrench: 'optionsGridFrench',
-  optionsGridNote: 'optionsGridNote',
-  optionsCoefficientsLegend: 'optionsCoefficientsLegend',
-  optionsCoefficientsNote: 'optionsCoefficientsNote',
-  optionsColModel: 'optionsColModel',
-  optionsColETokenWh: 'optionsColETokenWh',
-  optionsColPue: 'optionsColPue',
-  optionsColEmbodied: 'optionsColEmbodied',
-  optionsColThinking: 'optionsColThinking',
-  optionsColUncertainty: 'optionsColUncertainty',
-  optionsDefaultValue: 'optionsDefaultValue',
-  optionsSaveCoefficients: 'optionsSaveCoefficients',
-  optionsRestoreDefaults: 'optionsRestoreDefaults',
-  optionsInvalidCoefficient: 'optionsInvalidCoefficient',
-  optionsDataLegend: 'optionsDataLegend',
-  optionsExportJson: 'optionsExportJson',
-  optionsExportConversationsCsv: 'optionsExportConversationsCsv',
-  optionsExportDailyCsv: 'optionsExportDailyCsv',
-  optionsExportNote: 'optionsExportNote',
-  optionsEraseData: 'optionsEraseData',
-  optionsEraseDataTitle: 'optionsEraseDataTitle',
-  optionsEraseDataWarning: 'optionsEraseDataWarning',
-  optionsEraseDone: 'optionsEraseDone',
   optionsMethodologyLink: 'optionsMethodologyLink',
 } as const;
 
-/** Column label per editable coefficient, in the order the Options table shows them. */
-export const COEFFICIENT_MESSAGE_KEYS: Readonly<Record<EditableCoefficient, string>> = {
-  eTokenWh: 'optionsColETokenWh',
-  pue: 'optionsColPue',
-  embodiedPerTokenG: 'optionsColEmbodied',
-  hiddenThinkingMultiplier: 'optionsColThinking',
-  uncertaintyFactor: 'optionsColUncertainty',
-};
 
 /** Per-equivalence strings: the picker's option label, and the "$AMOUNT$ km by car" sentence. */
 export const EQUIVALENCE_MESSAGE_KEYS: Readonly<Record<EquivalenceId, { option: string; value: string }>> = {
