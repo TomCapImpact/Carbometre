@@ -30,6 +30,9 @@ This matters more than the feature list, so it comes first.
   never sees your full request payload, system prompts, or attachments.
 - **Everything stays on your machine**, in `chrome.storage.local`.
 
+The formal statement of this, in French and English, is
+[`docs/PRIVACY.md`](docs/PRIVACY.md) — the page the store listing links to.
+
 This posture is a design constraint, not an accident: intercepting requests would give
 more accurate model identification, and it was
 [considered and deliberately declined](docs/METHODOLOGY.md#what-would-make-this-better)

@@ -166,6 +166,8 @@ nothing anywhere.
 open the onboarding page once on first install. No alarms, no messaging, no network.
 Opening the tab uses `chrome.tabs.create`, which needs no `tabs` permission.
 
+**Privacy policy URL**: `https://github.com/TomCapImpact/Carbometre/blob/main/docs/PRIVACY.md`
+
 **Remote code**: none. Everything runs from the bundled `content.js`, `background.js`
 and `onboarding.js`.
 
